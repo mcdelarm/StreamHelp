@@ -1,0 +1,511 @@
+.App {
+  text-align: center;
+  }
+  .App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  }
+  }
+  .App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+  }
+  .App-link {
+  color: #61dafb;
+  }
+  @keyframes App-logo-spin {
+  from {
+  transform: rotate(0deg);
+  }
+  to {
+  transform: rotate(360deg);
+  }
+  }
+  .app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: #2e3b4e;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  .app-header .logout-button,
+  .app-header .login-button {
+  padding: 10px 20px;
+  background-color: #ff7f50;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  }
+  .app-header .logout-button:hover,
+  .app-header .login-button:hover {
+  background-color: #ff4500;
+  }
+  .app-header .login-button a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  }
+  .app-header .logout-button {
+  background-color: #4caf50;
+  }
+  .app-header .logout-button:hover {
+  background-color: #388e3c;
+  }
+  .app-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: #1f2a37;
+  padding: 15px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  }
+  .nav-button {
+  background-color: transparent;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  border-radius: 5px;
+  }
+  .nav-link {
+  text-decoration: none;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: center;
+  display: block;
+  padding: 8px 12px;
+  }
+  .nav-button:hover {
+  background-color: #ff7f50;
+  transform: scale(1.05);
+  }
+  .nav-link:hover {
+  color: #ff4500;
+  }
+  .filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: flex-start;
+    margin: 20px;
+  }
+  
+  .filter {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+  }
+  
+  .filter label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+  }
+  
+  .filter select,
+  .filter input {
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+  
+  .filter select[multiple],
+  .filter input[type='number'] {
+    height: auto;
+  }
+  
+  .filter input[type='text'] {
+    width: 90%;
+  }
+  
+  .filter select {
+    width: 100%;
+  }
+  
+  .filter input[type='number'] {
+    width: 90%;
+  }
+  
+  .filter input::placeholder {
+    font-style: italic;
+    color: #aaa;
+  }
+  
+  .filter select:focus,
+  .filter input:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  .filter button {
+    padding: 10px;
+    background-color: #007bff;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 16px;
+  }
+  
+  .filter button:hover {
+    background-color: #0056b3;
+  }
+  
+  .main-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background-color: #2e3b4e;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  .no-movies-message {
+  font-size: 1.2rem;
+  color: #ff7f50;
+  text-align: center;
+  padding: 10px;
+  background-color: #2a3a4c;
+  border-radius: 5px;
+  }
+  .pagination-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+  }
+  .pagination-button {
+  background-color: #ff7f50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  }
+  .pagination-button:hover {
+  background-color: #ff4500;
+  }
+  .pagination-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  }
+  @media (max-width: 768px) {
+  .main-container {
+  padding: 15px;
+  }
+  .pagination-container {
+  gap: 10px;
+  }
+  .pagination-button {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  }
+  }
+  .movies-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-around;
+  padding: 20px;
+  }
+  .movie-card {
+  width: 200px;
+  background-color: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  }
+  .movie-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+  .movie-poster {
+  width: 100%;
+  height: auto;
+  border-bottom: 3px solid #ff7f50;
+  }
+  .movie-title {
+  font-size: 1.1rem;
+  color: #fff;
+  margin: 10px;
+  font-weight: bold;
+  }
+  .movie-link {
+  text-decoration: none;
+  color: inherit;
+  }
+  .login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f5f5f5;
+  }
+  .login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  }
+  .login-form input[type="text"],
+  .login-form input[type="password"] {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 100%;
+  }
+  .login-form input::placeholder {
+  color: #888;
+  }
+  .login-button {
+  padding: 12px;
+  font-size: 1.1rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  }
+  .login-button:hover {
+  background-color: #0056b3;
+  }
+  body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  }
+  .movie-information-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  }
+  .movie-info-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+  text-align: center;
+  }
+  .movie-information-container hr {
+  border: 0;
+  height: 1px;
+  background: #ddd;
+  margin-bottom: 15px;
+  }
+  .movie-information-container p {
+  font-size: 1rem;
+  color: #555;
+  margin: 10px 0;
+  }
+  .movie-information-container p strong {
+  font-weight: bold;
+  color: #333;
+  }
+  .streaming-options-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  }
+  .no-options-message {
+  font-size: 1rem;
+  color: #888;
+  text-align: center;
+  }
+  .streaming-option-type-container {
+  margin-bottom: 20px;
+  }
+  .option-type-label {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 10px;
+  display: block;
+  }
+  .streaming-option-type-list {
+  list-style-type: none;
+  padding: 0;
+  }
+  .streaming-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #555;
+  }
+  .provider-logo {
+  margin-left: 10px;
+  max-width: 40px;
+  height: auto;
+  display: inline-block;
+  }
+  .streaming-option-type-list li:last-child {
+  margin-bottom: 0;
+  }
+  .watched-container {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+  }
+  .watched-container h3 {
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 10px;
+  }
+  .watched-message {
+  font-size: 1rem;
+  color: #4CAF50;
+  font-weight: bold;
+  margin-top: 10px;
+  }
+  .watched-label {
+  font-size: 1.1rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  }
+  .watched-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  }
+  .watched-checkbox:hover {
+  transform: scale(1.1);
+  }
+  .watched-checkbox:checked {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+  }
+  .watched-label {
+  margin-top: 10px;
+  }
+  .big-movie-page {
+  background-color: #fafafa;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  }
+  .big-movie-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-top: 20px;
+  text-align: center;
+  letter-spacing: 1px;
+  max-width: 800px;
+  margin-bottom: 20px;
+  }
+  .big-movie-poster {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  }
+  .big-movie-poster:hover {
+  transform: scale(1.05);
+  }
+  .movie-container {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 30px;
+  }
+  .movie-information-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  .streaming-options-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  .watched-container {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  .movie-container + .movie-container {
+  margin-top: 30px;
+  }
+
+  .filter-reset-button {
+    padding: 10px 20px;
+    background-color: #f44336; 
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 16px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .filter-reset-button:hover {
+    background-color: #d32f2f; 
+  }
+  
+  .filter-reset-button:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(244, 67, 54, 0.8); 
+  }
+  
