@@ -15,4 +15,5 @@ urlpatterns = [
   path('watched-movies/', views.getWatchedMovies),
   path('add-watched-movie/', views.postWatchedMovie),
   path('is-watched-movie/<str:pk>/', views.isWatchedMovie),
+  path('update-watched-movie/<str:pk>/', views.updateWatchedMovie)
 ]

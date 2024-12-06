@@ -4,7 +4,7 @@ import AuthContext from '../context/AuthContext'
 const MovieWatched = ({id}) => {
   const {user, authTokens} = useContext(AuthContext);
   const [hasWatched, setHasWatched] = useState(null);
-  const [rating, setRating] = useState(null)
+  const [rating, setRating] = useState(null);
 
   
 
@@ -45,7 +45,8 @@ const MovieWatched = ({id}) => {
             'Authorization': `Bearer ` + String(authTokens.access)
           },
           body: JSON.stringify({
-            movie_id: id
+            movie_id: id,
+            watched_date: new Date(),
           }),
         });
         if (!response.ok) {
@@ -61,6 +62,34 @@ const MovieWatched = ({id}) => {
     addWatchedMovie();
   }
 
+  const handleRatingChange = (event) => {
+    const selectedRating = parseInt(event.target.value, 10);
+    const updateRating = async () => {
+      try {
+        const response = await fetch(`http://127.0.0.1:8000/api/update-watched-movie/${id}/`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ` + String(authTokens.access)
+          },
+          body: JSON.stringify({
+            rating: selectedRating
+          }),
+        });
+        if (!response.ok) {
+          console.log("Error fetching watched movies");
+          return;
+        }
+        const data = await response.json();
+        setRating(selectedRating);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  updateRating();
+}
+
+
   if (!user) {
     return null;
   }
@@ -71,6 +100,31 @@ const MovieWatched = ({id}) => {
       <div className='watched-container'>
         <h3>Watched:</h3>
         <p className='watched-message'>You already watched this movie!</p>
+        <h3>Rating:</h3>
+        <form>
+        <div style={{ display: "flex", gap: "10px" }}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <label key={star} style={{ cursor: "pointer" }}>
+              <input
+                type="radio"
+                name="rating"
+                value={star}
+                checked={rating === star}
+                onChange={handleRatingChange}
+                style={{ display: "none" }}
+              />
+              <span
+                style={{
+                  fontSize: "2rem",
+                  color: star <= rating ? "#FFD700" : "#E0E0E0",
+                }}
+              >
+                ★
+              </span>
+            </label>
+          ))}
+        </div>
+        </form>
       </div>
     )
   }

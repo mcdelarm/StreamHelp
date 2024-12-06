@@ -53,4 +53,9 @@ class WatchedMovieCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WatchedMovie
-        fields = ['movie_id']
+        fields = ['movie_id', 'watched_date']
+
+class WatchedMovieUpdateSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = WatchedMovie
+    fields = ['rating'] #only allow updating the rating

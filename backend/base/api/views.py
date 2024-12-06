@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from base.models import Movies, StreamingOptionInstance, StreamingProvider, Languages, Genres, WatchedMovie
-from .serializers import MovieSerializer, StreamingOptionInstanceSerializer, StreamingProviderSerializer, LanguageSerializer, GenreSerializer, WatchedMovieSerializer, WatchedMovieCreateSerializer
+from .serializers import MovieSerializer, StreamingOptionInstanceSerializer, StreamingProviderSerializer, LanguageSerializer, GenreSerializer, WatchedMovieSerializer, WatchedMovieCreateSerializer, WatchedMovieUpdateSerializer
 from .pagination import MoviePagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -126,6 +126,7 @@ def postWatchedMovie(request):
   serializer = WatchedMovieCreateSerializer(data=request.data)
   if serializer.is_valid():
     watched_movie = serializer.save(user=request.user)
+    print(watched_movie.watched_date)
     return Response({
       "message": "Movie added to watched list.",
     }, status=status.HTTP_201_CREATED)
@@ -143,3 +144,19 @@ def isWatchedMovie(request, pk):
     isWatched = 1
     rating = queryset[0].rating
   return Response({"isWatched": isWatched, "rating": rating}, status=status.HTTP_200_OK)
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def updateWatchedMovie(request, pk):
+  try:
+    watched_movie = WatchedMovie.objects.get(movie=pk, user=request.user)
+    print(watched_movie)
+  except WatchedMovie.DoesNotExist:
+    return Response({'error': 'Movie not fouhd.'}, status=status.HTTP_404_NOT_FOUND)
+  
+  serializer = WatchedMovieUpdateSerializer(watched_movie, data=request.data, partial=True)
+  if serializer.is_valid():
+    print("Serializer is valid.")
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_200_OK)
+  return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
