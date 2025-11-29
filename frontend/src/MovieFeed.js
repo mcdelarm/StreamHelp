@@ -1,7 +1,8 @@
-import React from 'react'
+import React, {useState} from 'react'
 import MovieCard from './MovieCard'
 
 const MovieFeed = ({movies}) => {
+  const [selected, setSelected] = useState([]);
   return (
     <div className='movies-container'>
       {movies.map(movie => (

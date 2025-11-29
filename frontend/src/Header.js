@@ -9,7 +9,19 @@ const Header = () => {
   const location = useLocation();
 
   return (
-    <div className='app-header'>StreamHelp
+    <header className='app-header'>
+      <div className='header-left'>StreamHelp</div>
+
+      <div className='header-center'>
+        <button className={`nav-button ${location.pathname === '/discover' ? 'active' : ''}`}>
+          <Link to={'/discover'} className='nav-link'>Discover</Link>
+          </button>
+        <button className={`nav-button ${location.pathname === '/watched' ? 'active' : ''}`}>
+          <Link to={'/watched'} className='nav-link'>Watched</Link>
+        </button>
+      </div>
+
+      <div className='header-right'>
     {user ? (
       <button className='logout-button' onClick={logoutUser}>Logout</button>
     ): (
@@ -21,6 +33,8 @@ const Header = () => {
       
     )}
     </div>
+    </header>
+    
   )
 }
 

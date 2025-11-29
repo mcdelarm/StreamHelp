@@ -32,6 +32,7 @@ class Languages(models.Model):
 
 class Movies(models.Model):
   id = models.IntegerField(primary_key = True)
+  imdb_id = models.CharField(max_length=20, null=True)
   title = models.CharField(max_length=100)
   overview = models.TextField(null=True)
   release_date = models.DateField()
@@ -42,8 +43,15 @@ class Movies(models.Model):
   popularity = models.FloatField(null=True)
   original_language = models.ForeignKey(Languages, on_delete=models.CASCADE, null=True)
   vote_count = models.IntegerField(null=True)
+  imdb_votes = models.IntegerField(null=True)
   vote_average = models.FloatField(null=True)
+  imdb_rating = models.FloatField(null=True)
+  rotten_tomatoes_rating = models.IntegerField(null=True)
+  metacritic_rating = models.IntegerField(null=True)
   adult = models.BooleanField()
+  trailer_key = models.CharField(max_length=20, null=True)
+  trailer_site = models.CharField(max_length=50, null=True)
+  ratings_updated_at = models.DateTimeField(null=True)
   # streaming_updated_at = models.DateTimeField(null=True, blank=True)
 
 

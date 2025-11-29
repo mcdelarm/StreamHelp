@@ -87,11 +87,48 @@ class Command(BaseCommand):
             except:
               print(f"No streaming info available for {movie_obj['title']}. Deleting this movie.")
               movie.delete()
+              continue
 
           else:
             #Rating api failed
             print("Error fetching the tmdb rating api")
             break
+
+          if not movie.runtime or not movie.imdb_id:
+            #get movie runtime if it is null
+            detail_url = f"https://api.themoviedb.org/3/movie/{movie_obj['id']}"
+            response = requests.get(detail_url, headers=tmdb_headers)
+            if response.status_code == 200:
+              json_data = response.json()
+              if json_data['runtime']:
+                movie.runtime = json_data['runtime']
+              if json_data['imdb_id']:
+                movie.imdb_id = json_data['imdb_id']
+              movie.save()
+            else:
+              #detail request is bad
+              print("Error fetching the tmdb details api")
+              break
+          
+          if not movie.trailer_key:
+            #get movie trailer if it is null
+            video_url = f"https://api.themoviedb.org/3/movie/{movie_obj['id']}/videos"
+            response = requests.get(video_url, headers=tmdb_headers)
+            if response.status_code == 200:
+              json_data = response.json()
+              results = json_data['results']
+              for video_obj in results:
+                if video_obj['type'] == 'Trailer':
+                  if not movie.trailer_key or video_obj['official']:
+                    movie.trailer_key = video_obj['key']
+                    movie.trailer_site = video_obj['site']
+                    if video_obj['official']:
+                    #stop searching for trailer once you find the offical one
+                      break
+              movie.save()
+            else:
+              print("Error fetching the tmdb video api")
+              break
       
       else:
         #Request status is bad

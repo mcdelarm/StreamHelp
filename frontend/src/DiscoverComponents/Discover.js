@@ -2,69 +2,75 @@ import React from 'react'
 import { useState, useEffect} from 'react'
 import DiscoverFilters from './DiscoverFilters';
 import MovieFeed from '../MovieFeed';
+import { useSearchParams } from 'react-router-dom';
 
 const Discover = () => {
-  const [filters, setFilters] = useState({
-    genres: [],
-    min_release_year: '',
-    max_release_year: '',
-    languages: [],
-    sort: 'vote_average',
-    vote_count: '',
-    title: '',
-    streaming_services: [],
-    sort_direction: 'desc',
-    price: []
-
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
   const [movies, setMovies] = useState([]);
-  const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(false);
 
-  const handleFilterChange = (name, value) => {
-    setPageNumber(1);
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [name]: value
-    }));
+  // const DEFAULT_FILTERS = {
+  //   min_release_year: '1900',
+  //   max_release_year: new Date().getFullYear().toString(),
+  //   sort: 'vote_average',
+  //   min_rating: '0',
+  //   page: '1'
+  // }
+
+  // useEffect(() => {
+  //   const params = Object.fromEntries(searchParams.entries());
+  //   const newParams = {...DEFAULT_FILTERS, ...params};
+  //   setSearchParams(newParams);
+  // },[]);
+
+
+
+  const resetFilters = () => {
+    setSearchParams({});
+  }
+
+  const setFilter = (name, value) => {
+    console.log('setFilter called:', name, value);
+    setSearchParams(prev => {
+      console.log('prev params:', prev.toString())
+      const params = new URLSearchParams(prev);
+      if (value !== '') {
+        params.set(name, value);
+        console.log('will set ->:', name, value);
+      } else {
+        params.delete(name);
+        console.log('will delete ->', name);
+      }
+
+      console.log('new params:', params.toString());
+      return params;
+    });
   };
+
+  const setFilterArray = (name, value) => {
+    setSearchParams(prev => {
+      const params = new URLSearchParams(prev);
+      if (value.length > 0) {
+        params.set(name, value.join(','));
+      } else {
+        params.delete(name);
+      }
+      return params;
+    });
+  }
 
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const queryParams = new URLSearchParams();
-        if (filters.genres.length > 0) {
-          queryParams.append('genres', filters.genres.join(','));
+        const queryParams = new URLSearchParams(searchParams);
+        queryParams.set('sort_direction', 'desc');
+        if (!queryParams.get('sort')) {
+          queryParams.set('sort', 'vote_average');
         }
-        if (filters.languages.length > 0) {
-          queryParams.append('languages', filters.languages.join(','));
+        if (!queryParams.get('page')) {
+          queryParams.set('page', 1);
         }
-        if (filters.streaming_services.length > 0) {
-          queryParams.append('streaming_services', filters.streaming_services.join(','));
-        }
-        if (filters.price.length > 0) {
-          queryParams.append('price', filters.price.join(','));
-        }
-        if (filters.min_release_year) {
-          queryParams.append('min_release_year', filters.min_release_year);
-        }
-        if (filters.max_release_year) {
-          queryParams.append('max_release_year', filters.max_release_year);
-        }
-        if (filters.sort) {
-          queryParams.append('sort', filters.sort);
-        }
-        if (filters.vote_count) {
-          queryParams.append('vote_count', filters.vote_count);
-        }
-        if (filters.title) {
-          queryParams.append('title', filters.title);
-        }
-        if (filters.sort_direction) {
-          queryParams.append('sort_direction', filters.sort_direction)
-        }
-        queryParams.append('page', pageNumber);
-
+        
         const response = await fetch(`http://127.0.0.1:8000/api/movies/?${queryParams.toString()}`);
         const data = await response.json();
         if (data['next']) {
@@ -79,26 +85,32 @@ const Discover = () => {
       }
     };
     fetchMovies();
-  }, [filters, pageNumber]);
+  }, [searchParams]);
 
   const handlePreviousClick = () => {
-    setPageNumber(pageNumber - 1);
+    const params = new URLSearchParams(searchParams);
+    const newPage = Number(searchParams.get('page'));
+    params.set('page', newPage - 1);
+    setSearchParams(params);
   }
-  
+
   const handleNextClick = () => {
-    setPageNumber(pageNumber + 1);
+    const params = new URLSearchParams(searchParams);
+    const newPage = Number(searchParams.get('page'));
+    params.set('page', newPage + 1);
+    setSearchParams(params);
   }
 
   return (
     <div className='main-container'>
-      <DiscoverFilters filters={filters} setFilters={setFilters} onFilterChange={handleFilterChange}/>
+      <DiscoverFilters searchParams={searchParams} setSearchParams={setSearchParams} setFilter={setFilter} setFilterArray={setFilterArray} resetFilters={resetFilters}/>
       {movies.length ? (
         <MovieFeed movies={movies}/>
       ) : (
         <p className='no-movies-message'>No movies to display. Change the filters to retrieve more movies.</p>
       )}
       <div className='pagination-container'>
-        {pageNumber > 1 && (
+        {Number(searchParams.get('page')) > 1 && (
           <button onClick={handlePreviousClick} className='pagination-button'>Previous</button>
         )}
         {hasMore && (

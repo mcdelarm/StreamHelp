@@ -3,9 +3,9 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from base.models import Movies, StreamingOptionInstance, StreamingProvider, Genres, Languages, WatchedMovie
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+# from rest_framework_simplejwt.views import TokenObtainPairView
 
-class MyTokenObtainPairSerializer(TokenObtainPairView):
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
   @classmethod
   def get_token(cls, user):
     token = super().get_token(user)

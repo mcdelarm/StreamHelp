@@ -15,30 +15,59 @@ export const AuthProvider = ({children}) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  let loginUser = async (e) => {
-    e.preventDefault();
+  let loginUser = async (username, password) => {
     try {
       const response = await fetch('http://127.0.0.1:8000/api/token/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({username: e.target.username.value, password: e.target.password.value})
+        body: JSON.stringify({username, password})
       });
+
+      if (response.status === 200) {
+        const data = await response.json();
+        localStorage.setItem('authTokens', JSON.stringify(data));
+        setAuthTokens(data);
+        setUser(jwtDecode(data.access));
+        const redirectPath = location.state?.from?.pathname || '/discover'
+        navigate(redirectPath);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.log("Invalid username and/or password", error);
+      return false;
+    }
+  }
+
+  const signupUser = async (userData) => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/sign-up-user/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+      });
+
       const data = await response.json();
-      if (data){
+
+      if (response.status === 201) {
         localStorage.setItem('authTokens', JSON.stringify(data));
         setAuthTokens(data);
         setUser(jwtDecode(data.access));
         const redirectPath = location.state?.from?.pathname || '/discover';
         navigate(redirectPath);
+        return {sucess:true}
       } else {
-        alert('Something went wrong while logging in the user!')
+        return {sucess:false, errors: data}
       }
-    } catch (error) {
-      console.log("Error calling login function to server", error);
+    } catch (err) {
+      return {success: false, errors: {detail: 'Server error'}}
     }
-  }
+  };
 
   let logoutUser = (e) => {
     if (e) {
@@ -93,7 +122,8 @@ useEffect(()=>{
     user: user,
     authTokens: authTokens,
     loginUser: loginUser,
-    logoutUser: logoutUser
+    logoutUser: logoutUser,
+    signupUser: signupUser
   }
 
   return (

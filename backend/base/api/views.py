@@ -10,6 +10,8 @@ from .serializers import MyTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from django.contrib.auth.models import User
+
 
 @api_view(['GET'])
 def getRoutes(request):
@@ -53,7 +55,6 @@ class MovieListView(ListAPIView):
       queryset = queryset.filter(streaming_filter).distinct()
     if 'genres' in filters:
       genre_list = filters['genres'].split(',')
-      print(genre_list)
       queryset = queryset.filter(genres__name__in=genre_list).distinct()
     if 'languages' in filters:
       languages = filters['languages'].split(',')
@@ -64,6 +65,15 @@ class MovieListView(ListAPIView):
       for type in price_types:
         price_filter |= Q(streaming_services__type=type)
       queryset = queryset.filter(price_filter).distinct()
+    if 'min_rating' in filters:
+      min_rating = float(filters['min_rating'])
+      queryset = queryset.filter(vote_average__gte=min_rating)
+    if 'min_runtime' in filters:
+      min_runtime = int(filters['min_runtime'])
+      queryset = queryset.filter(runtime__gte=min_runtime)
+    if 'max_runtime' in filters:
+      max_runtime = int(filters['max_runtime'])
+      queryset = queryset.filter(runtime__lte=max_runtime)
 
     if 'sort' in filters:
       sort_direction = filters['sort_direction']
@@ -112,11 +122,42 @@ def getMovie(request, pk):
 class MyTokenObtainPairView(TokenObtainPairView):
   serializer_class = MyTokenObtainPairSerializer
 
+@api_view(['POST'])
+def signUpUser(request):
+  data = request.data
+  username = data.get('username')
+  email = data.get('email')
+  password = data.get('password')
+
+  if not username or not password or not email:
+    return Response({'detail': 'Username, email, and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+  
+  if User.objects.filter(username=username).exists():
+    return Response({'detail': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+  if User.objects.filter(email=email).exists():
+    return Response({'detail': 'Email already registered to an account.'}, status=status.HTTP_400_BAD_REQUEST)
+  
+  #eventually work towards validating the password making it more secure
+
+  user = User.objects.create_user(username=username, email=email, password=password)
+  user.save()
+
+  #generate jwt tokens
+  serializer = MyTokenObtainPairSerializer(data={'username': username, 'password': password})
+  if serializer.is_valid():
+    return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
+  else:
+    return Response({'detail': 'Failed to generate token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getWatchedMovies(request):
   user = request.user
   watched_movies = WatchedMovie.objects.filter(user=user)
+  sort_field = request.query_params.get('sort')
+  if sort_field:
+    watched_movies = watched_movies.order_by(sort_field)
   serializer = WatchedMovieSerializer(watched_movies, many=True)
   return Response(serializer.data)
 
