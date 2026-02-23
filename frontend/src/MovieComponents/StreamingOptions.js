@@ -18,13 +18,11 @@ const StreamingOptions = ({id}) => {
           acc[option.type].push(option);
           return acc;
         }, {});
-        console.log(groupedOptions);
         if (groupedOptions.flatrate) {
           groupedOptions.subscription = groupedOptions.flatrate;
         delete groupedOptions.flatrate;
         }
         setStreamingOptions(groupedOptions)
-        console.log(groupedOptions);
       } catch (error) {
         console.log("Error fetching streaming options")
       } finally {
@@ -47,12 +45,13 @@ const StreamingOptions = ({id}) => {
   
   return (
     <div className='streaming-options-container'>
+      <h3>Streaming Options</h3>
       {isEmpty ? (
         <p className='no-options-message'>No streaming information available for this movie.</p>
       ): (
         sortedKeys.map((type) => (
           <div className='streaming-option-type-container' key={type}>
-            <label className='option-type-label'>{type.charAt(0).toUpperCase() + type.slice(1)} Options:</label>
+            <span className='option-type-label'>{type.charAt(0).toUpperCase() + type.slice(1)}:</span>
             <ul className='streaming-option-type-list'>
               {streamingOptions[type].map((option) => (
                 <li className='streaming-option' key={option.provider_name}>

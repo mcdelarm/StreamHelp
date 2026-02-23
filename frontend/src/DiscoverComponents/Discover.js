@@ -3,46 +3,27 @@ import { useState, useEffect} from 'react'
 import DiscoverFilters from './DiscoverFilters';
 import MovieFeed from '../MovieFeed';
 import { useSearchParams } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 
 const Discover = () => {
+  const { user , authTokens} = React.useContext(AuthContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const [movies, setMovies] = useState([]);
   const [hasMore, setHasMore] = useState(false);
-
-  // const DEFAULT_FILTERS = {
-  //   min_release_year: '1900',
-  //   max_release_year: new Date().getFullYear().toString(),
-  //   sort: 'vote_average',
-  //   min_rating: '0',
-  //   page: '1'
-  // }
-
-  // useEffect(() => {
-  //   const params = Object.fromEntries(searchParams.entries());
-  //   const newParams = {...DEFAULT_FILTERS, ...params};
-  //   setSearchParams(newParams);
-  // },[]);
-
-
 
   const resetFilters = () => {
     setSearchParams({});
   }
 
   const setFilter = (name, value) => {
-    console.log('setFilter called:', name, value);
     setSearchParams(prev => {
-      console.log('prev params:', prev.toString())
       const params = new URLSearchParams(prev);
       if (value !== '') {
         params.set(name, value);
-        console.log('will set ->:', name, value);
       } else {
         params.delete(name);
-        console.log('will delete ->', name);
       }
 
-      console.log('new params:', params.toString());
       return params;
     });
   };
@@ -59,19 +40,36 @@ const Discover = () => {
     });
   }
 
+  const authHeader = authTokens ? { Authorization: `Bearer ${authTokens.access}` } : {};
+
+  useEffect(() => {
+    if (!user) {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('hide_watched');
+      setSearchParams(newParams, {replace: true});
+    }}, [user]);
+
   useEffect(() => {
     const fetchMovies = async () => {
       try {
         const queryParams = new URLSearchParams(searchParams);
         queryParams.set('sort_direction', 'desc');
         if (!queryParams.get('sort')) {
-          queryParams.set('sort', 'vote_average');
+          queryParams.set('sort', 'imdb_rating');
         }
         if (!queryParams.get('page')) {
           queryParams.set('page', 1);
         }
         
-        const response = await fetch(`http://127.0.0.1:8000/api/movies/?${queryParams.toString()}`);
+        const response = await fetch(`http://127.0.0.1:8000/api/movies/?${queryParams.toString()}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeader
+            }
+          }  
+      );
         const data = await response.json();
         if (data['next']) {
           setHasMore(true);
@@ -96,14 +94,14 @@ const Discover = () => {
 
   const handleNextClick = () => {
     const params = new URLSearchParams(searchParams);
-    const newPage = Number(searchParams.get('page'));
+    const newPage = Number(searchParams.get('page')) || 1;
     params.set('page', newPage + 1);
     setSearchParams(params);
   }
 
   return (
     <div className='main-container'>
-      <DiscoverFilters searchParams={searchParams} setSearchParams={setSearchParams} setFilter={setFilter} setFilterArray={setFilterArray} resetFilters={resetFilters}/>
+      <DiscoverFilters searchParams={searchParams} setSearchParams={setSearchParams} setFilter={setFilter} setFilterArray={setFilterArray} resetFilters={resetFilters} user={user}/>
       {movies.length ? (
         <MovieFeed movies={movies}/>
       ) : (

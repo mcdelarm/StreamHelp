@@ -1,6 +1,6 @@
 import React from 'react'
 import { createContext, useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
 
 const AuthContext = createContext();
@@ -13,9 +13,8 @@ export const AuthProvider = ({children}) => {
   let [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-  const location = useLocation();
 
-  let loginUser = async (username, password) => {
+  let loginUser = async (username, password, redirectPath = '/discover') => {
     try {
       const response = await fetch('http://127.0.0.1:8000/api/token/', {
         method: 'POST',
@@ -30,8 +29,7 @@ export const AuthProvider = ({children}) => {
         localStorage.setItem('authTokens', JSON.stringify(data));
         setAuthTokens(data);
         setUser(jwtDecode(data.access));
-        const redirectPath = location.state?.from?.pathname || '/discover'
-        navigate(redirectPath);
+        navigate(redirectPath, {replace: true});
         return true;
       } else {
         return false;
@@ -42,7 +40,7 @@ export const AuthProvider = ({children}) => {
     }
   }
 
-  const signupUser = async (userData) => {
+  const signupUser = async (userData, redirectPath = '/discover') => {
     try {
       const response = await fetch('http://127.0.0.1:8000/api/sign-up-user/', {
         method: 'POST',
@@ -58,8 +56,8 @@ export const AuthProvider = ({children}) => {
         localStorage.setItem('authTokens', JSON.stringify(data));
         setAuthTokens(data);
         setUser(jwtDecode(data.access));
-        const redirectPath = location.state?.from?.pathname || '/discover';
-        navigate(redirectPath);
+        console.log(`SignUp from location: ${redirectPath}`);
+        navigate(redirectPath, {replace: true});
         return {sucess:true}
       } else {
         return {sucess:false, errors: data}
@@ -73,11 +71,14 @@ export const AuthProvider = ({children}) => {
     if (e) {
       e.preventDefault();
     }
-    localStorage.removeItem('authTokens');
-    setAuthTokens(null);
-    setUser(null);
-    navigate('/discover');
-  }
+    navigate('/discover', {replace: true});
+
+    setTimeout(() => {
+      localStorage.removeItem('authTokens');
+      setAuthTokens(null);
+      setUser(null);
+    }, 0);
+  };
 
   const updateToken = async () => {
     const response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
@@ -113,7 +114,7 @@ useEffect(()=>{
       }
   }, REFRESH_INTERVAL)
   return () => clearInterval(interval)
-
+  //eslint-disable-next-line
 },[authTokens, loading]);
 
 

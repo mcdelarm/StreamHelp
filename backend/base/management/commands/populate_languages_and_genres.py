@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from base.models import Languages, Genres
 import requests
 
@@ -14,7 +15,7 @@ class Command(BaseCommand):
 
     headers = {
       "accept": "application/json",
-      "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YTkyMTJhZDExMTM3ZDlmOWMzMzg4NjExZmFlMTBlMSIsIm5iZiI6MTcyNzM2NjcxNS41NDQzOTUsInN1YiI6IjY2ZjFjNWM2MDMxNWI5MWY0NjNiMzJjNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.rdLipWOwnkrePPbCPMz2VR5_0k6RgCwmhyvgxDIhXOc"
+      "Authorization": f"Bearer {settings.TMDB_API_KEY}"
     }
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
@@ -32,7 +33,7 @@ class Command(BaseCommand):
 
     headers = {
       "accept": "application/json",
-      "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YTkyMTJhZDExMTM3ZDlmOWMzMzg4NjExZmFlMTBlMSIsIm5iZiI6MTcyNzM2NjcxNS41NDQzOTUsInN1YiI6IjY2ZjFjNWM2MDMxNWI5MWY0NjNiMzJjNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.rdLipWOwnkrePPbCPMz2VR5_0k6RgCwmhyvgxDIhXOc"
+      "Authorization": f"Bearer {settings.TMDB_API_KEY}"
     }
     response = requests.get(url, headers=headers)
     if response.status_code == 200:

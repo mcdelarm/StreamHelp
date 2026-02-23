@@ -1,7 +1,25 @@
 from django.db import models
 from django.contrib.auth.models import User
+from pgvector.django import VectorField
 
 # Create your models here.
+class Actor(models.Model):
+  id = models.IntegerField(primary_key=True)
+  name = models.CharField(max_length=100)
+  profile_picture = models.URLField(blank=True, null=True)
+  popularity = models.FloatField()
+
+  class Meta:
+    verbose_name_plural = 'Actors'
+
+class Director(models.Model):
+  id = models.IntegerField(primary_key=True)
+  name = models.CharField(max_length=100)
+  profile_picture = models.URLField(blank=True, null=True)
+  popularity = models.FloatField()
+
+  class Meta:
+    verbose_name_plural = 'Directors'
 
 class Genres(models.Model):
   id = models.CharField(primary_key=True, max_length=100)
@@ -48,12 +66,14 @@ class Movies(models.Model):
   imdb_rating = models.FloatField(null=True)
   rotten_tomatoes_rating = models.IntegerField(null=True)
   metacritic_rating = models.IntegerField(null=True)
-  adult = models.BooleanField()
+  adult = models.BooleanField(null=True)
   trailer_key = models.CharField(max_length=20, null=True)
   trailer_site = models.CharField(max_length=50, null=True)
+  trailer_official = models.BooleanField(null=True)
   ratings_updated_at = models.DateTimeField(null=True)
-  # streaming_updated_at = models.DateTimeField(null=True, blank=True)
-
+  streaming_updated_at = models.DateTimeField(null=True, blank=True)
+  cast = models.ManyToManyField(Actor, through='MovieActor', related_name='movies')
+  director = models.ManyToManyField(Director, related_name='movies')
 
   class Meta:
     verbose_name_plural = "Movies"
@@ -80,3 +100,17 @@ class WatchedMovie(models.Model):
 
   def __str__(self):
     return f"{self.user.username} - {self.movie.title}"
+
+class MovieActor(models.Model):
+  movie = models.ForeignKey(Movies, on_delete=models.CASCADE)
+  actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
+  character = models.CharField(max_length=500, null=True, blank=True)
+  order = models.IntegerField(default=0)
+
+class CollaborativeVector(models.Model):
+  movie_id = models.IntegerField(primary_key=True)
+  embedding = VectorField(dimensions=100)
+
+class ContentBasedVector(models.Model):
+  movie_id = models.OneToOneField(Movies, on_delete=models.CASCADE ,primary_key=True, related_name='content_based_vector')
+  embedding = VectorField(dimensions=384)

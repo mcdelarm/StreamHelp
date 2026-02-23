@@ -1,8 +1,10 @@
 import React, {useContext, useState} from 'react'
 import AuthContext from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const LoginPage = () => {
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/discover';
   let {loginUser} = useContext(AuthContext);
   const [error, setError] = useState('');
 
@@ -13,7 +15,7 @@ const LoginPage = () => {
     const username = e.target.username.value;
     const password = e.target.password.value;
     
-    const success = await loginUser(username, password);
+    const success = await loginUser(username, password, from);
 
     if (!success) {
       setError('Invalid username or password');
@@ -31,7 +33,7 @@ const LoginPage = () => {
         <input type="password" name='password' placeholder='Enter password' required/>
         <input type="submit" value="Login"/>
         <p style={{ textAlign: 'center', marginTop: '1rem', color: '#ccc' }}>
-          Don’t have an account? <Link to="/sign-up">Sign up here</Link>
+          Don’t have an account? <Link to="/sign-up" state={{from: {pathname: from}}}>Sign up here</Link>
         </p>
       </form>
     </div>

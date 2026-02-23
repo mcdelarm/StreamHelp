@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from base.models import Movies
+from django.conf import settings
 import requests
 from django.db.models import F
 from django.utils import timezone
@@ -9,19 +10,23 @@ class Command(BaseCommand):
   help = 'Fetches and updates the movie ratings of ~1000 movies a day'
 
   def handle(self, *args, **options):
-    api_limit = 950
+    api_limit = 990
     self.update_ratings(api_limit)
   
   def update_ratings(self, api_limit):
-    omdb_url = 'http://www.omdbapi.com/?apikey=aafd72fd&i='
+    omdb_url = f"http://www.omdbapi.com/?apikey={settings.OMDB_API_KEY}&i="
     movies = Movies.objects.filter(imdb_id__isnull=False).order_by(F('ratings_updated_at').asc(nulls_first=True))[:api_limit]
 
     for movie in movies:
-      response = requests.get(omdb_url + movie.imdb_id)
+      response = requests.get(omdb_url + movie.imdb_id,timeout=5)
       if response.status_code == 200:
         data = response.json()
-        if data['Ratings']:
+        try:
           ratings_obj = data['Ratings']
+          if len(ratings_obj) == 0:
+            print(f"Movie id: {movie.imdb_id} has no ratings. Deleting..")
+            movie.delete()
+            continue
           for rating in ratings_obj:
             if rating['Source'] == 'Internet Movie Database':
               movie.imdb_rating = float(rating['Value'].split('/')[0])
@@ -29,8 +34,10 @@ class Command(BaseCommand):
               movie.rotten_tomatoes_rating = int(rating['Value'].rstrip('%'))
             elif rating['Source'] == 'Metacritic':
               movie.metacritic_rating = int(rating['Value'].split('/')[0])
-        else:
-          print(f"{data['title']} has no ratings object")
+        except:
+          print(f"Movie id:{movie.imdb_id} has no ratings object. Deleting...")
+          movie.delete()
+          continue
 
         if data['imdbVotes'] and data['imdbVotes'] != 'N/A':
           movie.imdb_votes = int(data['imdbVotes'].replace(',', ''))
@@ -38,5 +45,5 @@ class Command(BaseCommand):
         movie.save()
 
       else:
-        print("Error fetching ratings")
+        print(f"Error fetching ratings for id:{movie.id}")
         break

@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
-from base.models import Movies, StreamingOptionInstance, StreamingProvider, Languages, Genres, WatchedMovie
-from .serializers import MovieSerializer, StreamingOptionInstanceSerializer, StreamingProviderSerializer, LanguageSerializer, GenreSerializer, WatchedMovieSerializer, WatchedMovieCreateSerializer, WatchedMovieUpdateSerializer
+from base.models import Movies, StreamingOptionInstance, StreamingProvider, Languages, Genres, WatchedMovie, Actor, Director, MovieActor
+from .serializers import MovieSerializer, StreamingOptionInstanceSerializer, StreamingProviderSerializer, LanguageSerializer, GenreSerializer, WatchedMovieSerializer, WatchedMovieCreateSerializer, WatchedMovieUpdateSerializer, DirectorSerializer, ActorSerializer, MoviesListSerializer
 from .pagination import MoviePagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -11,6 +11,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.contrib.auth.models import User
+from django.utils import timezone
+from base.recommendations.recommendations import recommend_movies_for_user, fetch_similar_movies
 
 
 @api_view(['GET'])
@@ -27,12 +29,12 @@ def getRoutes(request):
   return Response(routes)
 
 class MovieListView(ListAPIView):
-  serializer_class = MovieSerializer
+  serializer_class = MoviesListSerializer
   pagination_class = MoviePagination
 
   def get_queryset(self):
     filters = self.request.query_params
-    queryset = Movies.objects.all()
+    queryset = Movies.objects.filter(content_based_vector__isnull=False)
 
     if 'title' in filters:
       queryset = queryset.filter(title__icontains=filters['title'])
@@ -56,6 +58,12 @@ class MovieListView(ListAPIView):
     if 'genres' in filters:
       genre_list = filters['genres'].split(',')
       queryset = queryset.filter(genres__name__in=genre_list).distinct()
+    if 'actors' in filters:
+      actor_ids = [int(a) for a in filters['actors'].split(',')]
+      queryset = queryset.filter(cast__id__in=actor_ids).distinct()
+    if 'directors' in filters:
+      director_ids = [int(a) for a in filters['directors'].split(',')]
+      queryset = queryset.filter(director__id__in=director_ids).distinct()
     if 'languages' in filters:
       languages = filters['languages'].split(',')
       queryset = queryset.filter(original_language__id__in=languages).distinct()
@@ -74,7 +82,9 @@ class MovieListView(ListAPIView):
     if 'max_runtime' in filters:
       max_runtime = int(filters['max_runtime'])
       queryset = queryset.filter(runtime__lte=max_runtime)
-
+    if 'hide_watched' in filters and filters['hide_watched'] == 'true' and self.request.user.is_authenticated:
+      watched_ids = WatchedMovie.objects.filter(user=self.request.user).values_list('movie_id', flat=True)
+      queryset = queryset.exclude(id__in=watched_ids)
     if 'sort' in filters:
       sort_direction = filters['sort_direction']
       if sort_direction == 'asc':
@@ -102,6 +112,28 @@ def getGenres(request):
 def getLanguages(request):
   queryset = Languages.objects.all()
   serializer = LanguageSerializer(queryset, many=True)
+  return Response(serializer.data)
+
+@api_view(['GET'])
+def getActors(request):
+  name = request.GET.get('name')
+  print(name)
+  if name:
+    queryset = Actor.objects.filter(name__icontains=name).order_by('-popularity')[:5]
+  else:
+    queryset = Actor.objects.all().order_by('-popularity')[:5]
+  serializer = ActorSerializer(queryset, many=True)
+  return Response(serializer.data)
+
+@api_view(['GET'])
+def getDirectors(request):
+  name = request.GET.get('name')
+  print(name)
+  if name:
+    queryset = Director.objects.filter(name__icontains=name).order_by('-popularity')[:5]
+  else:
+    queryset = Director.objects.all().order_by('-popularity')[:5]
+  serializer = DirectorSerializer(queryset, many=True)
   return Response(serializer.data)
 
 
@@ -158,8 +190,10 @@ def getWatchedMovies(request):
   sort_field = request.query_params.get('sort')
   if sort_field:
     watched_movies = watched_movies.order_by(sort_field)
-  serializer = WatchedMovieSerializer(watched_movies, many=True)
-  return Response(serializer.data)
+  paginator = MoviePagination()
+  paginated_qs = paginator.paginate_queryset(watched_movies, request)
+  serializer = WatchedMovieSerializer(paginated_qs, many=True)
+  return paginator.get_paginated_response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -175,16 +209,14 @@ def postWatchedMovie(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def isWatchedMovie(request, pk):
-  isWatched = 0
+def getMovieRating(request, pk):
   rating = None
   user = request.user
   watched_movies = WatchedMovie.objects.filter(user=user)
   queryset = watched_movies.filter(movie=pk)
   if len(queryset) > 0:
-    isWatched = 1
     rating = queryset[0].rating
-  return Response({"isWatched": isWatched, "rating": rating}, status=status.HTTP_200_OK)
+  return Response({"rating": rating}, status=status.HTTP_200_OK)
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
@@ -201,3 +233,42 @@ def updateWatchedMovie(request, pk):
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
   return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def setMovieRating(request, pk):
+  user = request.user
+  rating = request.data.get('rating')
+  
+  if rating is None:
+    return Response({'error': 'Rating required'}, status=400)
+  
+  watched_movie, created = WatchedMovie.objects.update_or_create(
+    user=user,
+    movie_id=pk,
+    defaults={'rating': rating}
+  )
+
+  if created:
+    watched_movie.watched_date = timezone.now()
+    watched_movie.save(update_fields=['watched_date'])
+  
+  return Response({
+    'created': created,
+    'rating': watched_movie.rating
+  }, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getRecommendedMovies(request):
+  limit = 20
+  movies = recommend_movies_for_user(request.user, limit)
+  serializer = MoviesListSerializer(movies, many=True)
+  return Response(serializer.data)
+
+@api_view(['GET'])
+def getSimilarMovies(request, pk):
+  limit = 20
+  movies = fetch_similar_movies(pk, limit)
+  serializer = MoviesListSerializer(movies, many=True)
+  return Response(serializer.data)

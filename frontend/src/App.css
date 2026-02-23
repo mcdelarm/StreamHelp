@@ -154,12 +154,12 @@ body {
 .filters-container {
   background-color: #1e1e1e; /* same dark background as forms */
   padding: 1rem 2rem;
-  border-radius: 8px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   color: #f0f0f0;
-  width: 100%;
 }
 
 /* Top filter: search and reset */
@@ -250,7 +250,6 @@ body {
   padding: 0.5rem;
   border-radius: 4px;
   cursor: pointer;
-  width: 100%;
   text-align: left;
 }
 
@@ -283,19 +282,73 @@ body {
   font-size: 0.9rem;
   color: #ccc;
   align-items: center;
+  gap: 8px;
 }
 
-.bottom-filter select {
+.sort-select .react-select__control {
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #f0f0f0;
+  width: 135px;
+}
+
+.sort-select .react-select__control:focus,
+.sort-select .react-select__control:focus-within {
+  box-shadow: none;
+  outline: none;
+  border-color: #333;
+}
+
+.sort-select .react-select__menu {
+  background-color: #1e1e1e;
+  z-index: 100;
+  border-radius: 6px;
+}
+
+.sort-select .react-select__menu-list {
+  padding: 4px;
+}
+
+.sort-select .react-select__option {
   background-color: #2a2a2a;
   color: #f0f0f0;
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 0.5rem;
+  cursor: pointer;
+  margin: 2px;
+  border-radius: 6px;
+}
+
+.sort-select .react-select__option--is-focused {
+  background-color: #333;
+}
+
+.sort-select .react-select__option--is-selected {
+  background-color: #007aff; /* accent for selected */
+  color: #fff;
+  border-color: #007aff;
+}
+
+.sort-select .react-select__single-value {
+  color: #f0f0f0;
+  font-size: 12px;
+}
+
+.sort-select .react-select__indicator-separator {
+  display: none;
 }
 
 /* Hover effect for all buttons inside filters */
 .filters-container button:hover {
   opacity: 0.85;
+}
+
+.range-wrapper {
+  padding: 12px 8px;
+}
+
+.release-year-filter {
+  padding: 12px;
+  width: 260px;
 }
 
 .release-year-slider {
@@ -323,7 +376,7 @@ body {
 
 .multi-select-header {
   display: flex;
-  justify-content: space-between;
+  /* justify-content: space-between; */
   align-items: center;
   margin-bottom: 10px;
 }
@@ -331,22 +384,19 @@ body {
 .multi-select-title {
   font-weight: 600;
   font-size: 14px;
-  margin-right: 125px;
+  flex: 1;
 }
 
 .multi-select-reset-btn {
   background: none;
   border: none;
-  color: #ff6b6b; /* subtle accent for reset */
+  color: #ff6b6b; 
   cursor: pointer;
   font-weight: 500;
   font-size: 13px;
   padding: 2px 6px;
 }
 
-.multi-select-reset-btn:hover {
-  text-decoration: underline;
-}
 
 .multi-select-options-container {
   display: grid;
@@ -354,15 +404,8 @@ body {
   gap: 8px;
 }
 
-.multi-select-option {
-  padding: 6px 10px;
-  border-radius: 18px;
-  border: 1px solid #555; /* subtle border */
-  background-color: #2a2a2a; /* darker button background */
-  cursor: pointer;
-  text-align: center;
+.collapsible-filter .multi-select-option {
   font-size: 13px;
-  color: #ddd;
   transition: all 0.2s;
 }
 
@@ -379,11 +422,8 @@ body {
   flex-direction: column;
   gap: 16px;
   padding: 16px;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: #1e1e1e;
   color: #eee;
-  width: 100%;
 }
 
 /* Header (title + reset) */
@@ -511,7 +551,7 @@ body {
 
 /* No movies message */
 .no-movies-message {
-  color: white;
+  color: black;
   font-size: 16px;
   text-align: center;
   margin: 32px 0;
@@ -567,7 +607,7 @@ body {
 }
 
 /* Overall header layout */
-.watched-page-header {
+.watched-page-header, .recommended-movies-header {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -576,6 +616,7 @@ body {
   margin-bottom: 20px;
   padding-left: 6px;
 }
+
 
 /* Dropdown container (positioning) */
 .sort-by-dropdown {
@@ -634,4 +675,394 @@ body {
 .sort-by-dropdown-item.selected {
   background: #324c70;       /* subtle dark blue */
   font-weight: 600;
+}
+
+.movie-page {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+  font-family: "Inter", sans-serif;
+  color: #333;
+  margin-top: 0px;
+}
+
+.movie-page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.movie-page-year {
+  font-size: 1rem;
+  color: #777;
+  margin-bottom: 1.5rem;
+}
+
+/* Media Section */
+.movie-page-media {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+  height: 500px;
+}
+
+.movie-page-poster {
+  flex: 1;
+  width: 300px;
+  height: 100%;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.movie-page-trailer {
+  flex: 2;
+  min-height: 170px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  height: 100%;
+}
+
+/* Info Section */
+.movie-page-info {
+  display: flex;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* Left column */
+.movie-page-info-left {
+  flex: 2;
+}
+
+.genres-personal-rating-container{
+  display: flex;
+  justify-content: space-between;
+}
+
+.movie-page-genres-container {
+  margin-bottom: 1rem;
+  flex: 2;
+}
+
+.movie-page-genre {
+  display: inline-block;
+  background-color: #f0f4ff;
+  color: #1a3b8b;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.movie-page-overview {
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.movie-page-ratings h3 {
+  margin-bottom: 0.5rem;
+}
+
+.movie-page-rating-info {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.25rem;
+}
+
+/* Right column */
+.movie-page-info-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .movie-page-info {
+    flex-direction: column;
+  }
+
+  .movie-page-info-right {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .movie-page-title {
+    font-size: 2rem;
+  }
+
+  .movie-page-year {
+    font-size: 0.9rem;
+  }
+
+  .movie-page-media {
+    gap: 1rem;
+  }
+
+  .movie-page-info {
+    gap: 1rem;
+  }
+}
+
+.streaming-options-container {
+  background-color: #f9f9fb;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  font-family: "Inter", sans-serif;
+  color: #333;
+}
+
+.streaming-options-container h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.no-options-message {
+  font-size: 0.9rem;
+  color: #777;
+}
+
+/* Each type of streaming option (e.g., subscription, rent, free) */
+.streaming-option-type-container {
+  margin-bottom: 1rem;
+}
+
+.option-type-label {
+  font-weight: 500;
+  margin-right: 0.5rem;
+  color: #1a3b8b; /* same as genre chips for consistency */
+}
+
+/* List of providers for each type */
+.streaming-option-type-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem; /* row and column gaps */
+}
+
+/* Individual provider item */
+.streaming-option {
+  display: flex;
+  align-items: center;
+  background-color: #e9f3ff;
+  color: #1a3b8b;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  gap: 0.3rem;
+}
+
+/* Provider logo */
+.provider-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  border-radius: 2px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .streaming-option-type-list {
+    flex-direction: column;
+    gap: 0.25rem 0;
+  }
+}
+
+/* Actor and Director Filters */
+.people-filter-dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.people-filter-search-container {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.people-filter-input {
+  width: 100%;
+}
+
+
+.chips-container {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 6px;
+  width: 100%;
+  scrollbar-width: none;
+}
+
+.chips-container::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  background-color: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 9999px;
+  padding: 2px 0px;        /* increased padding so X doesn't overlap edges */
+  margin: 2px;
+  font-size: 11px;
+  line-height: 1;
+  gap: 0px;                 /* more breathing room between label + X */
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.chip-label {
+  color: #e6e6e6;
+  padding-left: 10px;
+}
+
+.collapsible-filter .chip-remove {
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: #d0d0d0;           /* brighter so it stands out */
+  font-size: 11px;
+  border-radius: 50%;       
+  line-height: 1;
+}
+
+.chip-remove:hover {
+  background-color: #444444; /* subtle hover background for clarity */
+  color: #ffffff;            /* brightens the X on hover */
+  box-shadow: none;
+}
+
+.chip-remove:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+
+
+
+/* ============================= */
+/* Cast + Director Section       */
+/* ============================= */
+
+
+.ratings-container {
+  display: flex;
+}
+
+.rating-container {
+  flex: 1;
+}
+
+.movie-page-ratings {
+  flex: 2;
+}
+
+
+/* Shared styling for cast + director sections */
+.cast-container, .director-section {
+  flex: 1;
+}
+
+.cast-container h3 {
+  margin-bottom: 12px;
+  font-size: 22px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 6px;
+}
+
+/* Grid layout */
+.cast-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* Actor / director cards */
+.actor-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.director-container{
+  flex: 1;
+}
+
+.director-grid {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.similar-movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  gap: 10px;
+}
+
+.actor-profile-picture,
+.director-profile-picture {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.15);
+  margin-bottom: 6px;
+}
+
+.actor-name,
+.director-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.actor-card-link,
+.director-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.character-name {
+  font-size: 11px;
+  color: #9a9a9a;
+  font-weight: 400;
+  margin-top: -2px; /* slight tighten under actor name */
+  text-align: center;
+  opacity: 0.95;
+}
+
+.empty-watched-error-message {
+  margin-top: 40px;
+  padding: 24px 28px;
+  max-width: 720px;
+
+  text-align: center;
+  font-size: 15px;
+  color: #9a9a9a;
+
+  background: #1f1f1f;        /* matches your dark card backgrounds */
+  border: 1px dashed #333;
+  border-radius: 10px;
+
+  line-height: 1.5;
 }

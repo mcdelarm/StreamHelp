@@ -1,0 +1,50 @@
+########################
+# General
+########################
+.DS_Store
+.env
+.env.*
+*.log
+
+########################
+# Python / Django
+########################
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+*.egg-info/
+venv/
+.venv/
+
+# Django-specific
+/staticfiles/
+/media/
+
+########################
+# React / Node
+########################
+node_modules/
+build/
+dist/
+.cache/
+
+########################
+# Testing / Coverage
+########################
+.coverage
+htmlcov/
+
+########################
+# IDE / Editor
+########################
+.vscode/
+.idea/
+*.swp
+
+########################
+# Docker
+########################
+*.pid
+*.dockerignore
+.env

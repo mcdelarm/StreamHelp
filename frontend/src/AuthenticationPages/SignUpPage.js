@@ -1,8 +1,10 @@
 import React, {useContext, useState} from 'react'
 import AuthContext from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const SignUpPage = () => {
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/discover';
   let {signupUser} = useContext(AuthContext);
   const [error, setError] = useState('');
 
@@ -14,7 +16,7 @@ const SignUpPage = () => {
     const password = e.target.password.value;
     const email = e.target.email.value.trim();
     
-    const result = await signupUser({username, password, email});
+    const result = await signupUser({username, password, email}, from);
 
     if (!result.success) {
       if (result.errors?.detail) {
@@ -40,7 +42,7 @@ const SignUpPage = () => {
         <input type="submit" value='Sign Up'/>
 
         <p style={{ textAlign: 'center', marginTop: '1rem', color: '#ccc' }}>
-        Already have an account? <Link to="/login">Login here</Link>
+        Already have an account? <Link to="/login" state={{from: {pathname: from}}}>Login here</Link>
       </p>
       </form>
     </div>

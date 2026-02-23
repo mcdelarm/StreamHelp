@@ -1,11 +1,14 @@
 import React, { useState } from "react";
+import Select from 'react-select';
 import CollapsibleFilter from "./CollapsibleFilter";
 import RangeSlider from "./RangeSlider";
 import CustomMultiSelect from "./CustomMultiSelect";
 import RatingFilter from "./RatingFilter";
-import { GENRE_OPTIONS, LANGUAGE_OPTIONS, STREAMING_OPTIONS, PRICE_OPTIONS} from "./filterOptions";
+import PeopleFilter from "./PeopleFilter";
+import { GENRE_OPTIONS, LANGUAGE_OPTIONS, STREAMING_OPTIONS, PRICE_OPTIONS, DISCOVER_SORT_BY_OPTIONS} from "./filterOptions";
 
-const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArray, resetFilters }) => {
+const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArray, resetFilters, user }) => {
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilter(name, value);
@@ -32,6 +35,19 @@ const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArr
     if (!value) return [];
     return value.split(',');
   }
+
+  const handleHideWatchedChange = (e) => {
+    if (e.target.checked) {
+      setFilter('hide_watched', 'true');
+    } else {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('hide_watched');
+      setSearchParams(newParams);
+    }
+  }
+
+  const [actorSelectedNames, setActorSelectedNames] = useState([]);
+  const [directorSelectedNames, setDirectorSelectedNames] = useState([]);
 
   return (
     <div className="filters-container">
@@ -74,27 +90,23 @@ const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArr
               </CollapsibleFilter>
 
               <CollapsibleFilter title="Release Year" openFilter={openFilter} onToggle={() => handleToggle("Release Year")}>
-                <RangeSlider min={1900} max={new Date().getFullYear()} min_val={searchParams.get('min_release_year') || '1900'} max_val={searchParams.get('max_release_year') || new Date().getFullYear().toString()} onRangeChange={(min_val, max_val) => onRangeChange('min_release_year', 'max_release_year', min_val, max_val)}></RangeSlider>
+                <RangeSlider min={1900} max={new Date().getFullYear()} min_val={searchParams.get('min_release_year') || '1900'} max_val={searchParams.get('max_release_year') || new Date().getFullYear().toString()} onRangeChange={(min_val, max_val) => onRangeChange('min_release_year', 'max_release_year', min_val, max_val)} title='Release Year'></RangeSlider>
               </CollapsibleFilter>
 
               <CollapsibleFilter title="Runtime" openFilter={openFilter} onToggle={() => handleToggle('Runtime')}>
-                <RangeSlider min={0} max={300} min_val={searchParams.get('min_runtime') || '0'} max_val={searchParams.get('max_runtime') || '300'} onRangeChange={(min_val, max_val) => onRangeChange('min_runtime', 'max_runtime', min_val, max_val)} unitLabel='min'></RangeSlider>
+                <RangeSlider min={0} max={300} min_val={searchParams.get('min_runtime') || '0'} max_val={searchParams.get('max_runtime') || '300'} onRangeChange={(min_val, max_val) => onRangeChange('min_runtime', 'max_runtime', min_val, max_val)} unitLabel='min' title='Runtime'></RangeSlider>
               </CollapsibleFilter>
 
               <CollapsibleFilter title="Rating" openFilter={openFilter} onToggle={() => handleToggle("Rating")}>
                 <RatingFilter vote_count={searchParams.get('vote_count') || ''} min_rating={searchParams.get('min_rating') || '0'} onVoteCountChange={(selectedValue) => setFilter('vote_count', selectedValue)} onRatingChange={(selectedValue) => setFilter('min_rating', selectedValue)}></RatingFilter>
-                {/* <select
-                  name="vote_count"
-                  value={filters.vote_count}
-                  onChange={handleChange}
-                >
-                  <option value="">-- Select a vote count --</option>
-                  <option value={"10"}>&gt; 10</option>
-                  <option value={"100"}>&gt; 100</option>
-                  <option value={"500"}>&gt; 500</option>
-                  <option value={"1000"}>&gt; 1000</option>
-                  <option value={"5000"}>&gt; 5000</option>
-                </select> */}
+              </CollapsibleFilter>
+
+              <CollapsibleFilter title='Actors' openFilter={openFilter} onToggle={() => handleToggle("Actors")}>
+                <PeopleFilter title='Actors' selected={getArrayParam('actors')} onChange={(selectedValues) => setFilterArray('actors', selectedValues)} selectedNames={actorSelectedNames} setSelectedNames={setActorSelectedNames}></PeopleFilter>
+              </CollapsibleFilter>
+
+              <CollapsibleFilter title='Directors' openFilter={openFilter} onToggle={() => handleToggle('Directors')}>
+                <PeopleFilter title='Directors' selected={getArrayParam('directors')} onChange={(selectedValues) => setFilterArray('directors', selectedValues)} selectedNames={directorSelectedNames} setSelectedNames={setDirectorSelectedNames}></PeopleFilter>
               </CollapsibleFilter>
             </div>
           )}
@@ -104,24 +116,28 @@ const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArr
       <div className="bottom-filter">
         <label>
           Sort By:
-          <select name="sort" value={searchParams.get('sort') || 'vote_average'} onChange={handleChange}>
-            <option value="vote_average">Rating</option>
-            <option value="popularity">Popularity</option>
-            <option value="release_date">Release Date</option>
-          </select>
+          <Select
+            className="sort-select"
+            classNamePrefix='react-select'
+            name="sort"
+            options={DISCOVER_SORT_BY_OPTIONS}
+            value={DISCOVER_SORT_BY_OPTIONS.find((o) => o.value === (searchParams.get('sort') || 'imdb_rating'))}
+            onChange={(option) => setFilter('sort', option.value)}
+          />
         </label>
+
+        {user && (
+          <label>
+            <input 
+              type="checkbox"
+              checked={searchParams.get('hide_watched') === 'true'}
+              onChange={handleHideWatchedChange}
+            ></input>
+            <span>Hide Watched Movies</span>
+          </label>
+        )}
       </div>
     </div>
-
-    /* <div className='filter'>
-       <label>
-          Sort Direction:
-          <select name='sort_direction' value={filters.sort_direction} onChange={handleChange}>
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
-          </select>
-        </label>
-       </div> */
   );
 };
 

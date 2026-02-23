@@ -1,20 +1,23 @@
 from django.core.management.base import BaseCommand
-from base.models import Movies, Genres, Languages, StreamingOptionInstance, StreamingProvider
-import requests
-
+from django.conf import settings
+from base.models import Movies, Genres, Languages, Actor, Director, MovieActor
+import requests, random
+import time
 
 class Command(BaseCommand):
   help = 'Fetches top rated movies from tmdb api'
 
   def handle(self, *args, **options):
-    api_limit = 10
-    self.populate_top_movies(api_limit)
+    api_limit = 0
+    start_page = 22
+    self.populate_top_movies(api_limit, start_page)
 
-  def populate_top_movies(self, call_limit):
-    page_number = 1
+  def populate_top_movies(self, call_limit, start_page):
+    page_number = start_page
+    end_page = start_page + call_limit - 1
     tmdb_headers = {
     "accept": "application/json",
-    "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI3YTkyMTJhZDExMTM3ZDlmOWMzMzg4NjExZmFlMTBlMSIsIm5iZiI6MTcyODA3OTAyNy4xODAxOTcsInN1YiI6IjY2ZjFjNWM2MDMxNWI5MWY0NjNiMzJjNSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.tCN1ZwS89PqvNtTu74iu1mm3oTWAiwpr22383btevnw"
+    "Authorization": f"Bearer {settings.TMDB_API_KEY}"
 }
     #Need to fetch configuration api to get the base image url for movie posters. 
     image_url = "https://api.themoviedb.org/3/configuration"
@@ -27,18 +30,57 @@ class Command(BaseCommand):
     else:
       print("Error getting image base_url and file size")
       return
+    
+    top_rated_url = f"https://api.themoviedb.org/3/movie/top_rated?language=en-US&region=US"
+    popularity_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&watch_region=US"
+    vote_count_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_count.desc&watch_region=US"
+    choices = ['popularity', 'top_rated', 'vote_count']
+    weights = [0, 0, 1]
+    random_choice = random.choices(choices, weights=weights, k=1)[0]
+    if random_choice == 'popularity':
+      print("Popularity api!")
+      random_url = popularity_url
+    elif random_choice == 'top_rated':
+      print("Top rated api!")
+      random_url = top_rated_url
+    else:
+      random_url = vote_count_url
+      print("Vote count api!")
 
-    while (page_number <= call_limit):
-      tmdb_url = f"https://api.themoviedb.org/3/movie/top_rated?language=en-US&page={page_number}&region=US"
-      response = requests.get(tmdb_url, headers=tmdb_headers)
+    while (page_number <= end_page):
+      response = requests.get(random_url + f"&page={page_number}", headers=tmdb_headers)
       if response.status_code == 200:
         #Request status is good
         json_data = response.json()
         results = json_data['results']
         for movie_obj in results:
-          queryset = Movies.objects.filter(id=movie_obj['id'])
+          movie_id = movie_obj['id']
+          queryset = Movies.objects.filter(id=movie_id)
           if len(queryset) == 0:
-            #Movie does not exist in database - need to create
+            #Movie does not exist in database - need to create. First get the imdb_id and runtime
+            detail_url = f"https://api.themoviedb.org/3/movie/{movie_id}"
+            response = requests.get(detail_url, headers=tmdb_headers)
+            if response.status_code == 200:
+              json_data = response.json()
+              if json_data['runtime']:
+                runtime = json_data['runtime']
+              else:
+                print(f"{movie_obj['title']} has no runtime information. Not adding to the db")
+                continue
+              if json_data['imdb_id']:
+                imbdb_id = json_data['imdb_id']
+              else:
+                print(f"{movie_obj['title']} has no imdb id. Not adding to the db")
+                continue
+            else:
+              #detail request is bad
+              print(f"Error fetching the tmdb details api for movie id:{movie_id}")
+              break
+
+            if not movie_obj['poster_path']:
+              print(f"{movie_obj['title']} has no poster path. Not adding to the db.")
+              continue
+            
             original_language = Languages.objects.get(id=movie_obj['original_language'])
             movie = Movies.objects.create(id=movie_obj['id'],
                                   adult=movie_obj['adult'],
@@ -50,69 +92,58 @@ class Command(BaseCommand):
                                   title=movie_obj['title'],
                                   vote_average=movie_obj['vote_average'],
                                   vote_count=movie_obj['vote_count'],
+                                  runtime=runtime,
+                                  imdb_id=imbdb_id,
                                   original_language=original_language
                                   )
             genre_obj = movie_obj['genre_ids']
             for genre_id in genre_obj:
               genre = Genres.objects.get(id=genre_id)
               movie.genres.add(genre)
+            
+            #Need to retrieve the cast when first creating movie
+            cast_url = f"https://api.themoviedb.org/3/movie/{movie_id}/credits?language=en-US"
+            response = requests.get(cast_url, headers=tmdb_headers)
+            if response.status_code == 200:
+              json_data = response.json()
+              cast_list = json_data['cast']
+              for default_order, actor_obj in enumerate(cast_list):
+                profile_path = actor_obj['profile_path']
+                full_profile_url = f"{base_url}{file_size}{profile_path}" if profile_path else None
+                actor, created = Actor.objects.get_or_create(id=actor_obj['id'],defaults={'name': actor_obj['name'], 'popularity': actor_obj['popularity'], 'profile_picture':full_profile_url})
+                MovieActor.objects.create(
+                  movie=movie,
+                  actor=actor,
+                  character=actor_obj.get('character', None),
+                  order=actor_obj.get('order', default_order)
+                )
+              crew_list = json_data['crew']
+              directors = [person for person in crew_list if person['job'] == 'Director']
+              if len(directors) == 0:
+                print(f"No director information for {movie.title}")
+              for director_obj in directors:
+                profile_path = director_obj['profile_path']
+                full_profile_url = f"{base_url}{file_size}{profile_path}" if profile_path else None
+                director, created = Director.objects.get_or_create(id=director_obj['id'],defaults={'name': director_obj['name'], 'popularity': director_obj['popularity'], 'profile_picture': full_profile_url})
+                movie.director.add(director)
+                  
+            else:
+              print(f"Error fetching the credits api for movie id:{movie_id}")
+              break
+            movie.save()
+
 
           else:
             #Movie already exists in database - need to update fields
-            movie = Movies.objects.get(id=movie_obj['id'])
+            movie = Movies.objects.get(id=movie_id)
             movie.popularity = movie_obj['popularity']
             movie.vote_average = movie_obj['vote_average']
             movie.vote_count = movie_obj['vote_count']
             movie.save()
-
-          rating_url = f"https://api.themoviedb.org/3/movie/{movie_obj['id']}/watch/providers"
-          response = requests.get(rating_url, headers=tmdb_headers)
-          if response.status_code == 200:
-            #Remove all streaming instances of this move and refill
-            StreamingOptionInstance.objects.filter(movie=movie).delete()
-            json_data = response.json()
-            results = json_data['results']
-            try:
-              us_options = results['US']
-              keys_iter = iter(us_options)
-              next(keys_iter)
-              for type in keys_iter:
-                for provider_obj in us_options[type]:
-                  queryset = StreamingProvider.objects.filter(provider_id=provider_obj['provider_id'])
-                  if len(queryset) == 0:
-                    streaming_provider = StreamingProvider.objects.create(provider_id=int(provider_obj['provider_id']), provider_name=provider_obj['provider_name'], logo=base_url + file_size + provider_obj['logo_path'])
-                  else:
-                    streaming_provider = queryset[0]
-                  StreamingOptionInstance.objects.create(movie=movie, provider=streaming_provider, type=type)
-            except:
-              print(f"No streaming info available for {movie_obj['title']}. Deleting this movie.")
-              movie.delete()
-              continue
-
-          else:
-            #Rating api failed
-            print("Error fetching the tmdb rating api")
-            break
-
-          if not movie.runtime or not movie.imdb_id:
-            #get movie runtime if it is null
-            detail_url = f"https://api.themoviedb.org/3/movie/{movie_obj['id']}"
-            response = requests.get(detail_url, headers=tmdb_headers)
-            if response.status_code == 200:
-              json_data = response.json()
-              if json_data['runtime']:
-                movie.runtime = json_data['runtime']
-              if json_data['imdb_id']:
-                movie.imdb_id = json_data['imdb_id']
-              movie.save()
-            else:
-              #detail request is bad
-              print("Error fetching the tmdb details api")
-              break
-          
-          if not movie.trailer_key:
-            #get movie trailer if it is null
-            video_url = f"https://api.themoviedb.org/3/movie/{movie_obj['id']}/videos"
+            
+          #Update the movie trailer
+          if not movie.trailer_key or not movie.trailer_official:
+            video_url = f"https://api.themoviedb.org/3/movie/{movie_id}/videos"
             response = requests.get(video_url, headers=tmdb_headers)
             if response.status_code == 200:
               json_data = response.json()
@@ -124,14 +155,17 @@ class Command(BaseCommand):
                     movie.trailer_site = video_obj['site']
                     if video_obj['official']:
                     #stop searching for trailer once you find the offical one
+                      movie.trailer_official = True
                       break
+              if not movie.trailer_key:
+                print(f"{movie.title} has no trailer information.")
               movie.save()
             else:
               print("Error fetching the tmdb video api")
               break
-      
       else:
         #Request status is bad
-        print("Error fetching the tmdb api")
+        print(f"Error fetching the tmdb api, status code: {response.status_code}")
         break
       page_number += 1
+      time.sleep(0.25)

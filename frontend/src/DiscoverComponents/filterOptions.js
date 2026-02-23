@@ -31,15 +31,24 @@ export const PRICE_OPTIONS = [
 ];
 
 export const VOTE_COUNT_OPTIONS = [
-  {label: "> 100", value:'100'},
-  {label: '> 500', value:'500'},
-  {label: '> 1000', value: '1000'},
-  {label: '> 5000', value: '5000'}
+  {label: "> 1k", value:'1000'},
+  {label: '> 10k', value:'10000'},
+  {label: '> 100k', value: '100000'},
+  {label: '> 1m', value: '1000000'}
 ];
 
 export const SORT_BY_OPTIONS = [
   {label: 'Personal Rating', value: '-rating'},
+  {label: 'Watched Date', value: '-watched_date'},
   {label: 'Public Rating', value: '-movie__vote_average'},
   {label: 'Popularity', value: '-movie__popularity'},
   {label: 'Release Year', value: '-movie__release_date'}
+]
+
+export const DISCOVER_SORT_BY_OPTIONS = [
+  {label: 'IMDb Rating', value: 'imdb_rating'},
+  {label: 'TMDB Rating', value: 'vote_average'},
+  {label: 'Popularity', value: 'popularity'},
+  {label: 'Release Date', value: 'release_date'},
+  {label: 'Vote Count', value: 'imdb_votes'},
 ]

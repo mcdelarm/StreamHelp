@@ -27,33 +27,42 @@ const RatingFilter = ({
           max={10}
           values={[Number(min_rating)]}
           onChange={(values) => onRatingChange(String(values[0]))}
-          renderTrack={({ props, children }) => (
-            <div
-              {...props}
-              style={{
-                ...props.style,
-                height: "6px",
-                background: "#444",
-                borderRadius: "4px",
-                marginTop: "10px",
-              }}
-            >
-              {children}
-            </div>
-          )}
-          renderThumb={({ props }) => (
-            <div
-              {...props}
-              style={{
-                ...props.style,
-                height: "20px",
-                width: "20px",
-                borderRadius: "50%",
-                backgroundColor: "#fff",
-                border: "1px solid #888",
-              }}
-            ></div>
-          )}
+          renderTrack={({ props: trackProps, children }) => {
+            const { key, ...rest } = trackProps;
+            return (
+              <div
+                key={key}
+                {...rest}
+                style={{
+                  ...rest.style,
+                  height: "6px",
+                  background: "#444",
+                  borderRadius: "4px",
+                  marginTop: "10px",
+                }}
+              >
+                {children}
+              </div>
+            );
+          }}
+          renderThumb={({ props: thumbProps }) => {
+            const { key, ...rest } = thumbProps;
+
+            return (
+              <div
+                key={key}
+                {...rest}
+                style={{
+                  ...rest.style,
+                  height: "20px",
+                  width: "20px",
+                  borderRadius: "50%",
+                  backgroundColor: "#fff",
+                  border: "1px solid #888",
+                }}
+              ></div>
+            );
+          }}
         />
 
         <div className="min-rating-values">

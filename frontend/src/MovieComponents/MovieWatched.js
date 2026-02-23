@@ -1,33 +1,37 @@
-import React, {useContext, useState, useEffect} from 'react'
-import AuthContext from '../context/AuthContext'
+import React, { useContext, useState, useEffect } from "react";
+import AuthContext from "../context/AuthContext";
+import ReactStars from 'react-rating-stars-component';
+import { useNavigate, useLocation} from "react-router-dom";
 
-const MovieWatched = ({id}) => {
-  const {user, authTokens} = useContext(AuthContext);
-  const [hasWatched, setHasWatched] = useState(null);
+const MovieWatched = ({ id }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, authTokens } = useContext(AuthContext);
   const [rating, setRating] = useState(null);
 
-  
-
+  //First fetch information regarding if user has watched movie and the current rating
   useEffect(() => {
     const fetchHasWatchedMovie = async () => {
       if (!user) {
         return;
       }
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/is-watched-movie/${id}/`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ` + String(authTokens.access)
-          },
-        });
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/get-movie-rating/${id}/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ` + String(authTokens.access),
+            },
+          }
+        );
         if (!response.ok) {
           console.log("Error fetching watched movies");
           return;
         }
         const data = await response.json();
-        setHasWatched(data['isWatched']);
-        setRating(data['rating'])
+        setRating(data.rating !== null ? parseFloat(data.rating) : null);
       } catch (error) {
         console.log(error);
       }
@@ -35,113 +39,51 @@ const MovieWatched = ({id}) => {
     fetchHasWatchedMovie();
   }, [user, id, authTokens]);
 
-  const handleChange = () => {
-    const addWatchedMovie = async () => {
+  const handleRatingChange = (newRating) => {
+    if (!user) {
+      navigate('/login', {state: {from: location}, replace: true});
+      return;
+    }
+    const updateRating = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/api/add-watched-movie/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ` + String(authTokens.access)
-          },
-          body: JSON.stringify({
-            movie_id: id,
-            watched_date: new Date(),
-          }),
-        });
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/set-movie-rating/${id}/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ` + String(authTokens.access),
+            },
+            body: JSON.stringify({
+              rating: newRating,
+            }),
+          }
+        );
         if (!response.ok) {
           console.log("Error fetching watched movies");
           return;
         }
-        const data = await response.json();
-        setHasWatched(!hasWatched);
+        setRating(newRating);
       } catch (error) {
         console.log(error);
       }
-    }
-    addWatchedMovie();
-  }
-
-  const handleRatingChange = (event) => {
-    const selectedRating = parseInt(event.target.value, 10);
-    const updateRating = async () => {
-      try {
-        const response = await fetch(`http://127.0.0.1:8000/api/update-watched-movie/${id}/`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ` + String(authTokens.access)
-          },
-          body: JSON.stringify({
-            rating: selectedRating
-          }),
-        });
-        if (!response.ok) {
-          console.log("Error fetching watched movies");
-          return;
-        }
-        const data = await response.json();
-        setRating(selectedRating);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  updateRating();
-}
-
-
-  if (!user) {
-    return null;
-  }
-
-
-  if (hasWatched) {
-    return (
-      <div className='watched-container'>
-        <h3>Watched:</h3>
-        <p className='watched-message'>You already watched this movie!</p>
-        <h3>Rating:</h3>
-        <form>
-        <div style={{ display: "flex", gap: "10px" }}>
-          {[1, 2, 3, 4, 5].map((star) => (
-            <label key={star} style={{ cursor: "pointer" }}>
-              <input
-                type="radio"
-                name="rating"
-                value={star}
-                checked={rating === star}
-                onChange={handleRatingChange}
-                style={{ display: "none" }}
-              />
-              <span
-                style={{
-                  fontSize: "2rem",
-                  color: star <= rating ? "#FFD700" : "#E0E0E0",
-                }}
-              >
-                ★
-              </span>
-            </label>
-          ))}
-        </div>
-        </form>
-      </div>
-    )
-  }
+    };
+    updateRating();
+  };
 
   return (
-    <div className='watched-container'>
-      <h3>Watched:</h3>
-      <label className='watched-label'>
-        Have you watched this movie?
-        <input 
-          type="checkbox" 
-          checked={hasWatched} 
-          onChange={handleChange} 
-        />
-      </label>
+    <div className="rating-container">
+      <h3>Personal Rating</h3>
+      <ReactStars
+        key={`stars_${rating}`}
+        count={5}
+        value={rating ?? 0}
+        isHalf={true}
+        onChange={handleRatingChange}
+        size={24}
+      />
     </div>
   )
-}
+};
 
-export default MovieWatched
+export default MovieWatched;

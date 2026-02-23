@@ -11,7 +11,7 @@ const CustomMultiSelect = ({title, options, selected, onChange}) => {
   return (
     <div className='multi-select-container'>
       <div className='multi-select-header'>
-        <span className='multi-select-title'>{title}</span>
+        <div className='multi-select-title'>{title}</div>
         <button 
           className='multi-select-reset-btn' 
           onClick={() => onChange([])}
