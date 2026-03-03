@@ -1,18 +1,53 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from base.models import Movies, Genres, Languages, Actor, Director, MovieActor
-import requests, random
+from base.models import Movies, Genres, Languages, Actor, Director, MovieActor, PopulateMoviesRun
+import requests
 import time
+from django.core.mail import send_mail
+
+ENDPOINTS = {
+  'rating': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_average.desc&vote_count.gte=150&watch_region=US",
+  'popularity': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&vote_count.gte=150&watch_region=US",
+  'vote_count': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_count.desc&vote_count.gte=150&watch_region=US"
+}
 
 class Command(BaseCommand):
   help = 'Fetches top rated movies from tmdb api'
 
   def handle(self, *args, **options):
-    api_limit = 20
-    start_page = random.randint(1, 300)
-    self.populate_top_movies(api_limit, start_page)
+    api_limit = 10
+    max_starting_page = 501 - api_limit
+    endpoint_names = list(ENDPOINTS.keys())
+    last_run = PopulateMoviesRun.objects.order_by('-completed_at').first()
+    if last_run:
+      last_index = endpoint_names.index(last_run.endpoint)
+      last_page_number = last_run.starting_page_number
+      if last_run.completed:
+        #change the endpoint and maybe page number for the next run
+        next_index = (last_index + 1) % len(endpoint_names)
+        endpoint = endpoint_names[next_index]
+        endpoint_url = ENDPOINTS[endpoint]
+        if next_index <= last_index:
+          start_page = last_page_number + api_limit
+          if start_page > max_starting_page:
+            start_page = 1
+        else:
+          start_page = last_page_number
+      else:
+        #retry the failed endpoint
+        start_page = last_page_number
+        endpoint = last_run.endpoint
+        endpoint_url = ENDPOINTS[last_run.endpoint]
+    else:
+      #No previous run - start with first endpoint and page 1
+      endpoint = endpoint_names[0]
+      endpoint_url = ENDPOINTS[endpoint]
+      start_page = 1
 
-  def populate_top_movies(self, call_limit, start_page):
+
+    self.populate_top_movies(api_limit, start_page, endpoint, endpoint_url)
+
+  def populate_top_movies(self, call_limit, start_page, endpoint, endpoint_url):
     page_number = start_page
     end_page = start_page + call_limit - 1
     tmdb_headers = {
@@ -31,24 +66,12 @@ class Command(BaseCommand):
       print("Error getting image base_url and file size")
       return
     
-    top_rated_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_average.desc&vote_count.gte=250&watch_region=US"
-    popularity_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&vote_count.gte=150&watch_region=US"
-    vote_count_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_count.desc&vote_count.gte=150&watch_region=US"
-    choices = ['popularity', 'top_rated', 'vote_count']
-    weights = [0.6, 0.35, 0.05]
-    random_choice = random.choices(choices, weights=weights, k=1)[0]
-    if random_choice == 'popularity':
-      print("Popularity api!")
-      random_url = popularity_url
-    elif random_choice == 'top_rated':
-      print("Top rated api!")
-      random_url = top_rated_url
-    else:
-      random_url = vote_count_url
-      print("Vote count api!")
+
+    completed = True
+    error = ''
 
     while (page_number <= end_page):
-      response = requests.get(random_url + f"&page={page_number}", headers=tmdb_headers)
+      response = requests.get(endpoint_url + f"&page={page_number}", headers=tmdb_headers)
       if response.status_code == 200:
         #Request status is good
         json_data = response.json()
@@ -74,7 +97,8 @@ class Command(BaseCommand):
                 continue
             else:
               #detail request is bad
-              print(f"Error fetching the tmdb details api for movie id:{movie_id}")
+              completed = False
+              error = f"Error fetching the tmdb details api for movie id:{movie_id}, status code: {response.status_code}"
               break
 
             if not movie_obj['poster_path']:
@@ -128,7 +152,8 @@ class Command(BaseCommand):
                 movie.director.add(director)
                   
             else:
-              print(f"Error fetching the credits api for movie id:{movie_id}")
+              completed = False
+              error = f"Error fetching the credits api for movie id:{movie_id}, status code: {response.status_code}"
               break
             movie.save()
 
@@ -161,11 +186,30 @@ class Command(BaseCommand):
                 print(f"{movie.title} has no trailer information.")
               movie.save()
             else:
-              print("Error fetching the tmdb video api")
+              completed = False
+              error = f"Error fetching the tmdb video api for movie id:{movie_id}, status code: {response.status_code}"
               break
       else:
         #Request status is bad
-        print(f"Error fetching the tmdb api, status code: {response.status_code}")
+        completed = False
+        error = f"Error fetching the tmdb api, status code: {response.status_code}"
         break
       page_number += 1
       time.sleep(0.25)
+    
+    #After the loop ends, create a PopulateMoviesRun object to log the results of this run
+    PopulateMoviesRun.objects.create(
+      completed = completed,
+      starting_page_number = start_page,
+      endpoint = endpoint,
+      error = error if not completed else None
+    )
+
+    if not completed:
+      #send email to admin about the failure
+      send_mail(
+        subject='Populate Movies Command Failed',
+        message=f'Populate movies command failed: {error}\nStarting Page: {start_page}\nEndpoint: {endpoint}',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[settings.DEFAULT_FROM_EMAIL],
+      )

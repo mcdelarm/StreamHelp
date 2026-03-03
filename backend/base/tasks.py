@@ -21,10 +21,10 @@ def build_overview_text(movie):
 
 def alert_on_failure(self, exc, task_id, args, kwargs, einfo):
     send_mail(
-        subject='Hey Martin, Celery Task Failed',
+        subject='Celery Task Failed',
         message=f'Task {task_id} failed: {exc}\nTask ID: {task_id}\nArgs: {args}\nKwargs: {kwargs}\nInfo: {einfo}',
         from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=['delarminatmartin@gmail.com'],
+        recipient_list=[settings.DEFAULT_FROM_EMAIL],
     )
 
 @shared_task(bind=True, on_failure=alert_on_failure)

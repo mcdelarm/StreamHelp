@@ -114,3 +114,10 @@ class CollaborativeVector(models.Model):
 class ContentBasedVector(models.Model):
   movie_id = models.OneToOneField(Movies, on_delete=models.CASCADE ,primary_key=True, related_name='content_based_vector')
   embedding = VectorField(dimensions=384)
+
+class PopulateMoviesRun(models.Model):
+  completed_at = models.DateTimeField(auto_now_add=True)
+  completed = models.BooleanField(default=False)
+  starting_page_number = models.IntegerField()
+  endpoint = models.CharField(max_length=20)
+  error = models.TextField(null=True, blank=True)
