@@ -61,7 +61,7 @@ const Discover = () => {
           queryParams.set('page', 1);
         }
         
-        const response = await fetch(`http://127.0.0.1:8000/api/movies/?${queryParams.toString()}`,
+        const response = await fetch(`/api/movies/?${queryParams.toString()}`,
           {
             method: "GET",
             headers: {

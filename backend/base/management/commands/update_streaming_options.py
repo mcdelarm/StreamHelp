@@ -10,7 +10,7 @@ class Command(BaseCommand):
   help = 'Update the streaming info for movies'
 
   def handle(self, *args, **options):
-    api_limit = 1000
+    api_limit = 500
     self.update_streaming_options(api_limit)
 
   def update_streaming_options(self, api_limit):

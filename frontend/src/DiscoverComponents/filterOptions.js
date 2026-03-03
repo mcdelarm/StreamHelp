@@ -1,10 +1,24 @@
 
 export const GENRE_OPTIONS = [
   { label: "Action", value: "action" },
+  { label: "Adventure", value: "adventure" },
   { label: "Comedy", value: "comedy" },
+  { label: "Drama", value: "drama" },
   { label: "Thriller", value: "thriller" },
-  { label: "Documentary", value: "documentary" },
   { label: "Horror", value: "horror" },
+  { label: 'Romance', value: 'romance'},
+  { label: "Science Fiction", value: "science fiction" },
+  { label: "Fantasy", value: "fantasy" },
+  { label: "Mystery", value: "mystery" },
+  { label: "Crime", value: "crime" },
+  { label: "Animation", value: "animation" },
+  { label: "Family", value: "family" },
+  { label: "Documentary", value: "documentary" },
+  { label: "War", value: "war" },
+  { label: "History", value: "history" },
+  { label: "Western", value: "western" },
+  { label: "Music", value: "music" },
+  { label: "TV Movie", value: "tv movie" },
 ];
 
 export const LANGUAGE_OPTIONS = [
@@ -12,6 +26,12 @@ export const LANGUAGE_OPTIONS = [
   { label: "French", value: "fr" },
   { label: "Spanish", value: "es" },
   { label: "German", value: "de" },
+  { label: "Italian", value: "it" },
+  { label: "Japanese", value: "ja" },
+  { label: "Korean", value: "ko" },
+  { label: "Chinese", value: "zh" },
+  { label: "Hindi", value: "hi" },
+  { label: "Russian", value: "ru" },
 ];
 
 export const STREAMING_OPTIONS = [
@@ -20,6 +40,9 @@ export const STREAMING_OPTIONS = [
   { label: "Max", value: "max" },
   { label: "Amazon Prime", value: "prime" },
   { label: "Apple TV", value: "apple" },
+  { label: "Disney+", value: "disney" },
+  { label: "Peacock", value: "peacock" },
+  { label: "Paramount+", value: "paramount" },
 ];
 
 export const PRICE_OPTIONS = [

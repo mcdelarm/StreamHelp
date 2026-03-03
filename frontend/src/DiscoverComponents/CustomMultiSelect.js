@@ -1,6 +1,6 @@
 import React from 'react'
 
-const CustomMultiSelect = ({title, options, selected, onChange}) => {
+const CustomMultiSelect = ({title, options, selected, onChange, maxHeight = 150}) => {
   const handleToggle = (value) => {
     const newSelected = selected.includes(value)
       ? selected.filter((v) => v !== value)
@@ -18,7 +18,9 @@ const CustomMultiSelect = ({title, options, selected, onChange}) => {
         >X Reset</button>
       </div>
       
-      <div className='multi-select-options-container'>
+      <div className='multi-select-options-container'
+        style={{ maxHeight: `${maxHeight}px`, overflowY: 'auto' }}
+      >
         {options.map(({value, label}) => {
           const isSelected = selected.includes(value);
 

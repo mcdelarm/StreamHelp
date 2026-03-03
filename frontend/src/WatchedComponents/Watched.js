@@ -49,7 +49,7 @@ const Watched = () => {
           queryParams.set('page', 1);
         }
         const response = await fetch(
-          `http://127.0.0.1:8000/api/watched-movies/?${queryParams.toString()}`,
+          `/api/watched-movies/?${queryParams.toString()}`,
           {
             method: "GET",
             headers: {
@@ -124,7 +124,7 @@ const Watched = () => {
       <div className="watched-page-header">
         <span>Previously Watched Movies sorted by </span>
         <div className="sort-by-dropdown" ref={dropDownRef}>
-          <button onClick={() => setOpen(!open)}>{SORT_BY_HASH[searchParams.get('sort') || '-rating']}</button>
+          <button onClick={() => setOpen(!open)}>{SORT_BY_HASH[searchParams.get('sort') || '-rating']} ▼</button>
           {open && (
             <div className="sort-by-options">
               {SORT_BY_OPTIONS.map(({ value, label }) => {

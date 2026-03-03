@@ -23,7 +23,6 @@ const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArr
     });
   }
 
-  const [open, setOpen] = useState(true);
   const [openFilter, setOpenFilter] = useState(null);
 
   const handleToggle = (filterName) => {
@@ -68,10 +67,6 @@ const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArr
       </div>
       <div className="middle-filter">
         <div className="expand-filters">
-          <button onClick={() => setOpen(!open)}>
-            Filters {open ? "◀" : "▶"}
-          </button>
-          {open && (
             <div className="collapsible-filters">
               <CollapsibleFilter title="Genres" openFilter={openFilter} onToggle={() => handleToggle("Genres")}>
                 <CustomMultiSelect title='Genres' options={GENRE_OPTIONS} selected={getArrayParam('genres')} onChange={(selectedValues) => setFilterArray('genres', selectedValues)}></CustomMultiSelect>
@@ -109,7 +104,6 @@ const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArr
                 <PeopleFilter title='Directors' selected={getArrayParam('directors')} onChange={(selectedValues) => setFilterArray('directors', selectedValues)} selectedNames={directorSelectedNames} setSelectedNames={setDirectorSelectedNames}></PeopleFilter>
               </CollapsibleFilter>
             </div>
-          )}
         </div>
       </div>
 
@@ -128,12 +122,12 @@ const DiscoverFilters = ({searchParams, setSearchParams, setFilter, setFilterArr
 
         {user && (
           <label>
+            <span>Hide Watched Movies:</span>
             <input 
               type="checkbox"
               checked={searchParams.get('hide_watched') === 'true'}
               onChange={handleHideWatchedChange}
             ></input>
-            <span>Hide Watched Movies</span>
           </label>
         )}
       </div>

@@ -12,7 +12,7 @@ const Movie = () => {
 
   useEffect(() => {
     const fetchMovie = async () => {
-      const response = await fetch(`http://127.0.0.1:8000/api/movie/${id}/`);
+      const response = await fetch(`/api/movie/${id}/`);
       const data = await response.json();
       setMovie(data);
     };

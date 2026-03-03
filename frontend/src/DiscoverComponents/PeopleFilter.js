@@ -38,9 +38,9 @@ const PeopleFilter = ({
     const fetchPeople = async () => {
       let api_url = "";
       if (title === "Actors") {
-        api_url = `http://127.0.0.1:8000/api/actors/?name=${name}`;
+        api_url = `/api/actors/?name=${name}`;
       } else {
-        api_url = `http://127.0.0.1:8000/api/directors/?name=${name}`;
+        api_url = `/api/directors/?name=${name}`;
       }
       try {
         const response = await fetch(api_url);

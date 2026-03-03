@@ -276,6 +276,12 @@ body {
   width: 100%;
 }
 
+.bottom-filter {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
 /* Bottom filter: sort select */
 .bottom-filter label {
   display: flex;
@@ -628,7 +634,7 @@ body {
 .sort-by-dropdown > button {
   background: transparent;
   border: none;
-  color: #66aaff;   /* subtle blue highlight */
+  color: #324c70;   /* subtle blue highlight */
   font-size: 18px;
   cursor: pointer;
   padding: 0;

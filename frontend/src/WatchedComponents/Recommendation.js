@@ -12,7 +12,7 @@ const Recommendation = () => {
         return;
       }
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/recommended-movies/',
+        const response = await fetch('/api/recommended-movies/',
           {
             method: 'GET',
             headers: {

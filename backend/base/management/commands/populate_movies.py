@@ -8,8 +8,8 @@ class Command(BaseCommand):
   help = 'Fetches top rated movies from tmdb api'
 
   def handle(self, *args, **options):
-    api_limit = 0
-    start_page = 22
+    api_limit = 20
+    start_page = random.randint(1, 300)
     self.populate_top_movies(api_limit, start_page)
 
   def populate_top_movies(self, call_limit, start_page):
@@ -31,11 +31,11 @@ class Command(BaseCommand):
       print("Error getting image base_url and file size")
       return
     
-    top_rated_url = f"https://api.themoviedb.org/3/movie/top_rated?language=en-US&region=US"
-    popularity_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&watch_region=US"
-    vote_count_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_count.desc&watch_region=US"
+    top_rated_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_average.desc&vote_count.gte=250&watch_region=US"
+    popularity_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&vote_count.gte=150&watch_region=US"
+    vote_count_url = f"https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_count.desc&vote_count.gte=150&watch_region=US"
     choices = ['popularity', 'top_rated', 'vote_count']
-    weights = [0, 0, 1]
+    weights = [0.6, 0.35, 0.05]
     random_choice = random.choices(choices, weights=weights, k=1)[0]
     if random_choice == 'popularity':
       print("Popularity api!")

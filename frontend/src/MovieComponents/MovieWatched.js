@@ -17,7 +17,7 @@ const MovieWatched = ({ id }) => {
       }
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/get-movie-rating/${id}/`,
+          `/api/get-movie-rating/${id}/`,
           {
             method: "GET",
             headers: {
@@ -41,13 +41,13 @@ const MovieWatched = ({ id }) => {
 
   const handleRatingChange = (newRating) => {
     if (!user) {
-      navigate('/login', {state: {from: location}, replace: true});
+      navigate('/login', {state: {from: location}});
       return;
     }
     const updateRating = async () => {
       try {
         const response = await fetch(
-          `http://127.0.0.1:8000/api/set-movie-rating/${id}/`,
+          `/api/set-movie-rating/${id}/`,
           {
             method: "POST",
             headers: {
