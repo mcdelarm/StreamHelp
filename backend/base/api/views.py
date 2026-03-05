@@ -46,7 +46,7 @@ class MovieListView(ListAPIView):
       queryset = queryset.filter(release_date__year__lte=max_release_year)
     if 'vote_count' in filters:
       vote_count = int(filters['vote_count'])
-      queryset = queryset.filter(imbdb_votes__gte=vote_count)
+      queryset = queryset.filter(imdb_votes__gte=vote_count)
     if 'genres' in filters:
       genre_list = filters['genres'].split(',')
       queryset = queryset.filter(genres__name__in=genre_list).distinct()

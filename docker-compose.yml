@@ -12,22 +12,11 @@ services:
       - redis
     env_file:
       - ./.env
-  
-  worker:
+
+  celery_worker:
     build: ./backend
-    container_name: celery-worker
-    command: celery -A backend worker -l info
-    depends_on:
-      - redis
-      - backend
-      - db
-    env_file:
-      - ./.env
-  
-  beat:
-    build: ./backend
-    container_name: celery-beat
-    command: celery -A backend beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    container_name: celery_worker
+    command: celery -A backend worker --loglevel=info --concurrency=1 --max-tasks-per-child=1
     depends_on:
       - redis
       - backend

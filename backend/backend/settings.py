@@ -43,7 +43,6 @@ CORS_ALLOWED_ORIGINS = [
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
-    'django_celery_beat',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',

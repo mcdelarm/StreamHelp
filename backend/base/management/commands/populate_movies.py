@@ -6,9 +6,9 @@ import time
 from django.core.mail import send_mail
 
 ENDPOINTS = {
-  'rating': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_average.desc&vote_count.gte=150&watch_region=US",
-  'popularity': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&vote_count.gte=150&watch_region=US",
-  'vote_count': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_count.desc&vote_count.gte=150&watch_region=US"
+  'rating': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_average.desc&vote_count.gte=250&watch_region=US",
+  'popularity': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=popularity.desc&vote_count.gte=250&watch_region=US",
+  'vote_count': "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=vote_count.desc&vote_count.gte=250&watch_region=US"
 }
 
 class Command(BaseCommand):
@@ -16,7 +16,7 @@ class Command(BaseCommand):
 
   def handle(self, *args, **options):
     api_limit = 10
-    max_starting_page = 501 - api_limit
+    max_starting_page = 301 - api_limit
     endpoint_names = list(ENDPOINTS.keys())
     last_run = PopulateMoviesRun.objects.order_by('-completed_at').first()
     if last_run:
@@ -48,6 +48,7 @@ class Command(BaseCommand):
     self.populate_top_movies(api_limit, start_page, endpoint, endpoint_url)
 
   def populate_top_movies(self, call_limit, start_page, endpoint, endpoint_url):
+    print(f"Starting populate movies command. Endpoint: {endpoint}, Starting Page: {start_page}")
     page_number = start_page
     end_page = start_page + call_limit - 1
     tmdb_headers = {
