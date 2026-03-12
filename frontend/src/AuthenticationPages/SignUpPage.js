@@ -30,18 +30,26 @@ const SignUpPage = () => {
   return (
     <div className='login-page'>
       <form className='login-form' onSubmit={handleSubmit}>
-        <h2>Create an Account</h2>
+        <div className='login-header'>
+          <p className='login-title'>Create an Account</p>
+          <p className='login-description'>Sign up to access all features</p>
+        </div>
         {error && <div className='error-message'>{error}</div>}
-        
-        <label htmlFor='email'>Email</label>
-        <input type="email" name="email" placeholder='Enter email' required/>
-        <label htmlFor='username'>Username</label>
-        <input type="text" name='username' placeholder='Enter username' required/>
-        <label htmlFor='password'>Password</label>
-        <input type="password" name='password' placeholder='Enter password' required/>
+        <div className='login-input-group'>
+          <label htmlFor='email'>Email</label>
+          <input type="email" name="email" placeholder='Enter email' required/>
+        </div>
+        <div className='login-input-group'>
+          <label htmlFor='username'>Username</label>
+          <input type="text" name='username' placeholder='Enter username' required/>
+        </div>
+        <div className='login-input-group'>
+          <label htmlFor='password'>Password</label>
+          <input type="password" name='password' placeholder='Enter password' required/>
+        </div>
         <input type="submit" value='Sign Up'/>
 
-        <p style={{ textAlign: 'center', marginTop: '1rem', color: '#ccc' }}>
+        <p className='login-link'>
         Already have an account? <Link to="/login" state={{from: {pathname: from}}}>Login here</Link>
       </p>
       </form>

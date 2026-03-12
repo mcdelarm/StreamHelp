@@ -7,7 +7,7 @@ export const GENRE_OPTIONS = [
   { label: "Thriller", value: "thriller" },
   { label: "Horror", value: "horror" },
   { label: 'Romance', value: 'romance'},
-  { label: "Science Fiction", value: "science fiction" },
+  { label: "Sci-Fi", value: "science fiction" },
   { label: "Fantasy", value: "fantasy" },
   { label: "Mystery", value: "mystery" },
   { label: "Crime", value: "crime" },
@@ -57,14 +57,13 @@ export const VOTE_COUNT_OPTIONS = [
   {label: "> 1k", value:'1000'},
   {label: '> 10k', value:'10000'},
   {label: '> 100k', value: '100000'},
-  {label: '> 1m', value: '1000000'}
+  {label: '> 1mil', value: '1000000'}
 ];
 
 export const SORT_BY_OPTIONS = [
   {label: 'Personal Rating', value: '-rating'},
-  {label: 'Watched Date', value: '-watched_date'},
+  {label: 'Last Seen', value: '-watched_date'},
   {label: 'Public Rating', value: '-movie__vote_average'},
-  {label: 'Popularity', value: '-movie__popularity'},
   {label: 'Release Year', value: '-movie__release_date'}
 ]
 

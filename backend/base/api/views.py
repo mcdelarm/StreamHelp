@@ -108,9 +108,9 @@ class MovieListView(ListAPIView):
       soft_field = filters['sort']
       sort_direction = filters['sort_direction']
       if sort_direction == 'asc':
-        queryset = queryset.order_by(F(soft_field).asc(nulls_last=True))
+        queryset = queryset.order_by(F(soft_field).asc(nulls_last=True), 'id')
       else:
-        queryset = queryset.order_by(F(soft_field).desc(nulls_last=True))
+        queryset = queryset.order_by(F(soft_field).desc(nulls_last=True), 'id')
 
 
     return queryset

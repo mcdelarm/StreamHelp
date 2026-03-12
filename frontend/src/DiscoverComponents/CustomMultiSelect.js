@@ -1,42 +1,54 @@
-import React from 'react'
+import React from "react";
 
-const CustomMultiSelect = ({title, options, selected, onChange, maxHeight = 150}) => {
+const CustomMultiSelect = ({ title, options, selected, onChange }) => {
   const handleToggle = (value) => {
     const newSelected = selected.includes(value)
       ? selected.filter((v) => v !== value)
       : [...selected, value];
-    
-      onChange(newSelected)
+
+    onChange(newSelected);
   };
   return (
-    <div className='multi-select-container'>
-      <div className='multi-select-header'>
-        <div className='multi-select-title'>{title}</div>
-        <button 
-          className='multi-select-reset-btn' 
-          onClick={() => onChange([])}
-        >X Reset</button>
-      </div>
-      
-      <div className='multi-select-options-container'
-        style={{ maxHeight: `${maxHeight}px`, overflowY: 'auto' }}
-      >
-        {options.map(({value, label}) => {
+    <div className="multi-select-container">
+      <label className="multi-select-title">{title}</label>
+      <div className="multi-select-options-container">
+        {options.map(({ value, label }) => {
           const isSelected = selected.includes(value);
 
           return (
-            <button
-              key={value} 
-              className={`multi-select-option ${isSelected ? 'selected' : ''}`}
-              onClick={() => handleToggle(value)}
-            >
-              {label}
-            </button>
+            <div key={value} className="option-container">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={isSelected}
+                className={`multi-select-option ${isSelected ? "selected" : ""}`}
+                onClick={() => handleToggle(value)}
+              >
+                {isSelected && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="checkmark-svg"
+                    style={{ pointerEvents: "none" }}
+                  >
+                    <path d="M20 6 9 17l-5-5"></path>
+                  </svg>
+                )}
+              </button>
+              <label onClick={() => handleToggle(value)}>{label}</label>
+            </div>
           );
         })}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CustomMultiSelect
+export default CustomMultiSelect;

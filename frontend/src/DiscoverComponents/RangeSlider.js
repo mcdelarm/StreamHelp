@@ -1,5 +1,5 @@
 import React from "react";
-import { Range } from "react-range";
+import { Range, getTrackBackground } from "react-range";
 
 const RangeSlider = ({
   min,
@@ -12,15 +12,8 @@ const RangeSlider = ({
 }) => {
   return (
     <div className="release-year-filter">
-      <div className="multi-select-header">
-        <span className="multi-select-title">{title}</span>
-        <button
-          className="multi-select-reset-btn"
-          onClick={() => onRangeChange(String(min), String(max))}
-        >
-          X Reset
-        </button>
-      </div>
+      <label className="multi-select-title">{title}</label>
+
       <div className="range-wrapper">
         <Range
           step={1}
@@ -40,10 +33,15 @@ const RangeSlider = ({
                 key="track"
                 style={{
                   ...rest.style,
-                  height: "6px",
-                  background: "#444",
+                  height: "5px",
+                  background: getTrackBackground({
+                    values: [Number(min_val), Number(max_val)],
+                    colors: ["lab(90 0 0)", "lab(2.75381 0 0)", "lab(90 0 0)"],
+                    min,
+                    max,
+                  }),
                   borderRadius: "4px",
-                  marginTop: "10px",
+                  marginTop: "8px",
                 }}
               >
                 {children}
@@ -59,11 +57,11 @@ const RangeSlider = ({
                 key={index}
                 style={{
                   ...rest.style,
-                  height: "20px",
-                  width: "20px",
+                  height: "16px",
+                  width: "16px",
                   borderRadius: "50%",
-                  backgroundColor: "#fff",
-                  border: "1px solid #888",
+                  backgroundColor: "rgb(255, 255, 255)",
+                  border: "1.5px solid lab(7.78201 -0.0000149012 0)",
                 }}
               />
             );

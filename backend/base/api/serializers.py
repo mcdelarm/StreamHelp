@@ -72,13 +72,15 @@ class MovieSerializer(ModelSerializer):
     ]
   
   def get_similar_movies(self, obj):
-    similar_movies = fetch_similar_movies(obj.id, top_n=5)
+    similar_movies = fetch_similar_movies(obj.id, top_n=8)
 
     return [
       {
         'id': m.id,
         'title': m.title,
-        'poster': m.poster
+        'poster': m.poster,
+        'imdb_rating': m.imdb_rating,
+        'release_date': m.release_date
       }
       for m in similar_movies
     ]

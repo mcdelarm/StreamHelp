@@ -1,5 +1,5 @@
 import React from "react";
-import { Range } from "react-range";
+import { Range, getTrackBackground } from "react-range";
 import { VOTE_COUNT_OPTIONS } from "./filterOptions";
 
 const RatingFilter = ({
@@ -10,19 +10,10 @@ const RatingFilter = ({
 }) => {
   return (
     <div className="rating-filter-container">
-      <div className="rating-filter-header">
-        <span className="rating-filter-title">Rating</span>
-        <button
-          className="rating-filter-reset-btn"
-          onClick={() => onRatingChange("0")}
-        >
-          X Reset
-        </button>
-      </div>
-
+      <label className="multi-select-title">Minimum Rating</label>
       <div className="rating-range-container">
         <Range
-          step={1}
+          step={0.1}
           min={0}
           max={10}
           values={[Number(min_rating)]}
@@ -35,10 +26,15 @@ const RatingFilter = ({
                 {...rest}
                 style={{
                   ...rest.style,
-                  height: "6px",
-                  background: "#444",
+                  height: "5px",
+                  background: getTrackBackground({
+                    values: [Number(min_rating)],
+                    colors: ["lab(2.75381 0 0)", "lab(90 0 0)"],
+                    min: 0,
+                    max: 10,
+                  }),
                   borderRadius: "4px",
-                  marginTop: "10px",
+                  marginTop: "8px",
                 }}
               >
                 {children}
@@ -54,11 +50,11 @@ const RatingFilter = ({
                 {...rest}
                 style={{
                   ...rest.style,
-                  height: "20px",
-                  width: "20px",
+                  height: "16px",
+                  width: "16px",
                   borderRadius: "50%",
-                  backgroundColor: "#fff",
-                  border: "1px solid #888",
+                  backgroundColor: "rgb(255, 255, 255)",
+                  border: "1.5px solid lab(7.78201 -0.0000149012 0)",
                 }}
               ></div>
             );
@@ -66,34 +62,44 @@ const RatingFilter = ({
         />
 
         <div className="min-rating-values">
-          <span>{min_rating}</span>
-          <span>10</span>
+          <span>⭐ {Number(min_rating).toFixed(1)} and up</span>
         </div>
       </div>
 
-      <div className="rating-filter-header">
-        <span className="rating-filter-title">Vote Count</span>
-        <button
-          className="rating-filter-reset-btn"
-          onClick={() => onVoteCountChange("")}
-        >
-          X Reset
-        </button>
-      </div>
-
-      <div className="vote-count-options-container">
+      <label className="vote-count-label">Minimum Vote Count</label>
+      <div className="multi-select-options-container">
         {VOTE_COUNT_OPTIONS.map(({ value, label }) => {
           const isSelected = vote_count === value;
 
           return (
-            <button
-              key={value}
-              type="button"
-              className={`vote-count-option ${isSelected ? "selected" : ""}`}
-              onClick={() => onVoteCountChange(value)}
-            >
-              {label}
-            </button>
+            <div key={value} className="option-container">
+              <button
+                type="button"
+                role="checkbox"
+                aria-checked={isSelected}
+                className={`multi-select-option ${isSelected ? "selected" : ""}`}
+                onClick={() => onVoteCountChange(value)}
+              >
+                {isSelected && (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="checkmark-svg"
+                    style={{ pointerEvents: "none" }}
+                  >
+                    <path d="M20 6 9 17l-5-5"></path>
+                  </svg>
+                )}
+              </button>
+              <label onClick={() => onVoteCountChange(value)}>{label}</label>
+            </div>
           );
         })}
       </div>

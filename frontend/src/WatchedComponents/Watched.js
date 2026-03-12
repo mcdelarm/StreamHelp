@@ -1,39 +1,16 @@
-import React, { useContext, useState, useEffect, useRef } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import AuthContext from "../context/AuthContext";
-import MovieFeed from "../MovieFeed";
 import Recommendation from "./Recommendation";
 import { SORT_BY_OPTIONS } from "../DiscoverComponents/filterOptions";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
+import CustomSingleSelect from "../DiscoverComponents/CustomSingleSelect";
 
 const Watched = () => {
   const { user, authTokens } = useContext(AuthContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const [movies, setMovies] = useState([]);
-  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [count, setCount] = useState(0);
-  const [open, setOpen] = useState(false);
-  const dropDownRef = useRef(null);
-
-  const SORT_BY_HASH = SORT_BY_OPTIONS.reduce((acc, { label, value }) => {
-  acc[value] = label;
-  return acc;
-}, {});
-
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropDownRef.current && !dropDownRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [open]);
 
   useEffect(() => {
     const fetchWatchedMovies = async () => {
@@ -42,11 +19,11 @@ const Watched = () => {
       }
       try {
         const queryParams = new URLSearchParams(searchParams);
-        if (!queryParams.get('sort')) {
-          queryParams.set('sort', '-rating');
+        if (!queryParams.get("sort")) {
+          queryParams.set("sort", "-rating");
         }
-        if (!queryParams.get('page')) {
-          queryParams.set('page', 1);
+        if (!queryParams.get("page")) {
+          queryParams.set("page", 1);
         }
         const response = await fetch(
           `/api/watched-movies/?${queryParams.toString()}`,
@@ -56,21 +33,15 @@ const Watched = () => {
               "Content-Type": "application/json",
               Authorization: `Bearer ` + String(authTokens.access),
             },
-          }
+          },
         );
         if (!response.ok) {
           console.log("Error fetching watched movies");
           return;
         }
-
         const data = await response.json();
-        if (data['next']) {
-          setHasMore(true);
-        } else {
-          setHasMore(false);
-        }
-        setCount(Number(data['count']))
-        setMovies(data['results'] || []);
+        setCount(Number(data["count"]));
+        setMovies(data["results"] || []);
       } catch (err) {
         console.log(err);
       } finally {
@@ -80,27 +51,13 @@ const Watched = () => {
     fetchWatchedMovies();
   }, [user, authTokens, searchParams]);
 
-  const handlePreviousClick = () => {
-    const params = new URLSearchParams(searchParams);
-    const newPage = Number(searchParams.get('page'));
-    params.set('page', newPage - 1);
-    setSearchParams(params);
-  }
-
-  const handleNextClick = () => {
-    const params = new URLSearchParams(searchParams);
-    const newPage = Number(searchParams.get('page')) || 1;
-    params.set('page', newPage + 1);
-    setSearchParams(params);
-  }
-
   const setSort = (value) => {
-    setSearchParams(prev => {
+    setSearchParams((prev) => {
       const params = new URLSearchParams(prev);
-      params.set('sort', value);
+      params.set("sort", value);
       return params;
-    })
-  }
+    });
+  };
 
   if (!user) {
     return (
@@ -112,7 +69,7 @@ const Watched = () => {
 
   if (loading) {
     return (
-      <div>
+      <div className="loading-watched-msg">
         <p>Loading your watched movies...</p>
       </div>
     );
@@ -120,49 +77,48 @@ const Watched = () => {
 
   return (
     <div className="watched-page">
-      <div className="watched-movies-container">
-      <div className="watched-page-header">
-        <span>Previously Watched Movies sorted by </span>
-        <div className="sort-by-dropdown" ref={dropDownRef}>
-          <button onClick={() => setOpen(!open)}>{SORT_BY_HASH[searchParams.get('sort') || '-rating']} ▼</button>
-          {open && (
-            <div className="sort-by-options">
-              {SORT_BY_OPTIONS.map(({ value, label }) => {
-                const isSelected = !searchParams.get('sort') && value === '-rating'
-                  ? true
-                  : searchParams.get('sort') === value;
-
-                return (
-                  <button
-                    key={value}
-                    className={`sort-by-dropdown-item ${
-                      isSelected ? "selected" : ""
-                    }`}
-                    onClick={() => setSort(value)}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+      <section className="watched-movies-container">
+        <div className="watched-page-header">
+          <h1 className="watched-title">Watched Movies</h1>
+          <div className="sort-by-container">
+            <span className="count-span">{count}</span> movies sorted by
+            <CustomSingleSelect
+              options={SORT_BY_OPTIONS}
+              selected={searchParams.get("sort") || "-rating"}
+              onChange={setSort}
+            />
+          </div>
+        </div>
+        <div className="watched-movies-bottom">
+          {count > 0 ? (
+            <div className="watched-movie-feed">
+              {movies.map((movie) => (
+                <div className="watched-movie-card" key={movie.id}>
+                  <Link to={`/movie/${movie.id}`} className="watched-movie-link">
+                    <div className="watched-movie-poster-container">
+                      <img
+                        className="watched-movie-poster"
+                        src={movie.poster}
+                        alt={movie.title}
+                      />
+                    </div>
+                    <div className="watched-movie-title">{movie.title}</div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty-watched-error-message">
+              <h3>No movies found</h3>
+              <p>
+                Rate movies to store watched movies and get more personalized
+                recommendations!
+              </p>
             </div>
           )}
         </div>
-      </div>
-      {count > 0 ? (
-        <MovieFeed movies={movies}/>
-      ) : (
-        <div className="empty-watched-error-message">Rate movies to store watched movies and get more personalized recommendations!</div>
-      )}
-      <div className="pagination-container">
-        {Number(searchParams.get('page')) > 1 && (
-          <button onClick={handlePreviousClick} className="pagination-button">Previous</button>
-        )}
-        {hasMore && (
-          <button onClick={handleNextClick} className="pagination-button">Next</button>
-        )}
-      </div>
-      </div>
-      <Recommendation/>
+      </section>
+      <Recommendation />
     </div>
   );
 };

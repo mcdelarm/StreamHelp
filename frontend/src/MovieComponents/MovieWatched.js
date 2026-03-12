@@ -73,7 +73,6 @@ const MovieWatched = ({ id }) => {
 
   return (
     <div className="rating-container">
-      <h3>Personal Rating</h3>
       <ReactStars
         key={`stars_${rating}`}
         count={5}
