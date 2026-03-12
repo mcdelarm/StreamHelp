@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  backend:
+    image: mcdelarm/streamhelp-backend:latest
+    container_name: streamhelp_backend
+    command: gunicorn backend.wsgi:application --bind 0.0.0.0:8000
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+    expose:
+      - "8000"
+
+  celery_worker:
+    image: mcdelarm/streamhelp-backend:latest
+    container_name: streamhelp_celery_worker
+    command: celery -A backend worker --loglevel=info --concurrency=1 --max-tasks-per-child=1
+    env_file:
+      - ./.env
+    depends_on:
+      - backend
+      - db
+      - redis
+    restart: unless-stopped
+
+  nginx:
+    image: mcdelarm/streamhelp-nginx:latest
+    container_name: streamhelp_nginx
+    depends_on:
+      - backend
+    ports:
+      - "80:8080"
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: streamhelp_redis
+    restart: unless-stopped
+
+  db:
+    image: pgvector/pgvector:pg18
+    container_name: streamhelp_db
+    env_file:
+      - ./.env
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    expose:
+      - "5432"
+
+volumes:
+  postgres_data:
