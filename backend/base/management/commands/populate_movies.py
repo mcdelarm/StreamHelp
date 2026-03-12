@@ -16,7 +16,7 @@ class Command(BaseCommand):
 
   def handle(self, *args, **options):
     api_limit = 10
-    max_starting_page = 301 - api_limit
+    max_starting_page = 201 - api_limit
     endpoint_names = list(ENDPOINTS.keys())
     last_run = PopulateMoviesRun.objects.order_by('-completed_at').first()
     if last_run:
