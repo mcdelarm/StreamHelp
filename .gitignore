@@ -47,4 +47,3 @@ htmlcov/
 ########################
 *.pid
 *.dockerignore
-.env
