@@ -54,6 +54,8 @@ class Command(BaseCommand):
               movie.save()
         except:
           print(f"No streaming info available for {movie.title}. Skipping...")
+          movie.streaming_updated_at = timezone.now()
+          movie.save()
       else:
         print("error fetching the tmdb providers api")
         break
