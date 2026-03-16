@@ -28,7 +28,7 @@ const Discover = () => {
       } else {
         params.delete(name);
       }
-
+      params.set("page", 1);
       return params;
     });
   };
@@ -41,6 +41,7 @@ const Discover = () => {
       } else {
         params.delete(name);
       }
+      params.set("page", 1);
       return params;
     });
   };
